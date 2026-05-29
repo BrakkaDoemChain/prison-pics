@@ -21,3 +21,13 @@ https://www.youtube.com/watch?v=gRX5chOQIpU
 https://grok.com/share/bGVnYWN5_dd805aeb-d4e9-4c56-8270-3723cef3fc07
 
 https://www.youtube.com/watch?v=Zj5-hdAY5cM
+
+https://www.youtube.com/watch?v=nwAX8-IcJKU
+
+https://grok.com/share/bGVnYWN5_36bcae23-623c-47a2-95d7-947f3c6635f0
+
+https://grok.com/share/bGVnYWN5_74844252-be9f-4842-8022-e5a857edf496
+
+https://grok.com/share/bGVnYWN5_979030ec-bfd3-4258-9467-cc904a85d32b
+
+https://grok.com/project/8d5a23de-d09b-4728-98ba-7c017983f0c4?tab=conversations
