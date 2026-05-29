@@ -15,3 +15,7 @@ https://grok.com/share/bGVnYWN5_99f35824-7e2f-48d6-917d-8c863ff9234c
 https://grok.com/share/bGVnYWN5_48aa2f1a-e8b8-4ffb-9334-c473992ed051
 
 https://grok.com/share/bGVnYWN5_9f3268d5-5a57-4a31-8de4-c3358068c640
+
+https://www.youtube.com/watch?v=gRX5chOQIpU
+
+https://grok.com/share/bGVnYWN5_dd805aeb-d4e9-4c56-8270-3723cef3fc07
