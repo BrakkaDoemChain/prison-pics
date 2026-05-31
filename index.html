@@ -94,14 +94,14 @@
                 Ongeziene <span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">Realiteiten.</span>
             </h1>
             <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-400">
-                Een documentair archief gewijd aan transparantie, gerechtigheid en de menselijke conditie achter de muren. Wij brengen actuele informatie en live beelden aan het licht.
+                Aangedreven door <span class="text-gray-200 font-mono">BrakkaDoemChain</span>. Een gedecentraliseerd archief gewijd aan transparantie. Omdat fysieke camera's kunnen breken, maar de chain altijd blijft draaien.
             </p>
             <div class="mt-10 flex justify-center gap-4">
                 <a href="#chatcam" class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-200 transition-colors flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span> Open Live Chatcam
                 </a>
                 <a href="#gallery" class="px-8 py-3 border border-gray-600 text-base font-medium rounded-md text-white hover:bg-gray-800 transition-colors">
-                    Verken het Archief
+                    Verken de Github Repo
                 </a>
             </div>
         </div>
@@ -119,7 +119,7 @@
                     <p class="mt-2 text-gray-500">Beveiligde, geanonimiseerde stream aangedreven door BrakkaDoemChain.</p>
                 </div>
                 <div class="hidden sm:block">
-                    <span class="text-xs font-mono text-green-500 bg-gray-900 px-3 py-1 rounded border border-green-900/50">Status: Verbonden (P2P)</span>
+                    <span class="text-xs font-mono text-yellow-500 bg-gray-900 px-3 py-1 rounded border border-yellow-900/50">Status: Verbonden (Gedeeltelijke Storing)</span>
                 </div>
             </div>
 
@@ -127,13 +127,15 @@
                 <!-- Video Feed -->
                 <div class="lg:col-span-2 bg-[#0a0a0a] border border-gray-800 rounded-lg overflow-hidden relative min-h-[400px] flex items-center justify-center">
                     <div class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/50 px-2 py-1 rounded text-xs font-mono text-gray-400 backdrop-blur-sm">
-                        <span class="text-red-500 font-bold">REC</span> <span>CAM-04 // BLOK B</span>
+                        <span class="text-yellow-500 font-bold">WARN</span> <span>CAM-MAIN // OFFLINE</span>
                     </div>
                     <!-- Placeholder voor de video stream -->
                     <div class="text-center text-gray-600 font-mono text-sm z-10 relative">
-                        <i class="fa-solid fa-video-slash text-4xl mb-4 block opacity-50"></i>
-                        [ Verbinden met BrakkaDoemChain WebRTC... ]<br>
-                        Wachten op host signal...
+                        <i class="fa-solid fa-camera-rotate text-4xl mb-4 block text-red-900/50 animate-pulse"></i>
+                        <span class="text-red-500">[ CRITICAL ERROR: LENS SHATTERED ]</span><br>
+                        Verbinding met primaire hardware (Pixel 9 Pro Node) verbroken.<br>
+                        Beeldopname-mogelijkheden uitgeschakeld.<br>
+                        Wachten op decentrale community uploads via GitHub...
                     </div>
                     <!-- Scanline overlay effect -->
                     <div class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-20"></div>
@@ -142,23 +144,26 @@
                 <!-- Chat Interface -->
                 <div class="bg-[#111] border border-gray-800 rounded-lg flex flex-col h-[400px] lg:h-auto">
                     <div class="p-4 border-b border-gray-800 bg-black/50">
-                        <h3 class="text-sm font-mono text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-lock text-gray-500 mr-2"></i> Gecodeerde Chat</h3>
+                        <h3 class="text-sm font-mono text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-link text-gray-500 mr-2"></i> BrakkaDoemChain P2P Chat</h3>
                     </div>
                     
                     <div class="flex-1 p-4 overflow-y-auto font-mono text-sm space-y-4">
-                        <div class="text-gray-500 text-xs text-center mb-4 border-b border-gray-800 pb-2">Sessie gestart via justice.kim nodes</div>
+                        <div class="text-gray-500 text-xs text-center mb-4 border-b border-gray-800 pb-2">Sync met github.com/BrakkaDoemChain/prison-pics (MAIN) actief.</div>
                         
                         <div class="text-gray-300">
-                            <span class="text-purple-500 font-bold">[anon_84f2]</span> We zijn live, connectie is stabiel.
+                            <span class="text-blue-500 font-bold">[sys_admin]</span> Waarschuwing: Node uitzending afgebroken.
                         </div>
                         <div class="text-gray-300">
-                            <span class="text-blue-500 font-bold">[sys_admin]</span> BrakkaDoemChain repo is geüpdatet.
+                            <span class="text-purple-500 font-bold">[anon_84f2]</span> Wat is er gebeurd met de main feed? Beeld is zwart.
+                        </div>
+                        <div class="text-red-400">
+                            <span class="text-red-500 font-bold">[SYS_ALERT]</span> HARDWARE FAILURE: Pixel 9 Pro lens verbrijzeld. Apparaat kan geen foto's meer maken.
                         </div>
                         <div class="text-gray-300">
-                            <span class="text-green-500 font-bold">[watcher_99]</span> Beeld is nog zwart hier, klopt dat?
+                            <span class="text-green-500 font-bold">[watcher_99]</span> Zonde van die Pixel. Sterkte aan de veldwerker.
                         </div>
                         <div class="text-gray-300">
-                            <span class="text-purple-500 font-bold">[anon_84f2]</span> Ja, host is de camera nog aan het configureren. Even geduld.
+                            <span class="text-blue-500 font-bold">[sys_admin]</span> Geen paniek. We bouwen verder via de repo. Laat de rest van de P2P nodes de data aanleveren.
                         </div>
                     </div>
 
@@ -315,12 +320,12 @@
                     <ul class="space-y-2 text-sm text-gray-500">
                         <li><a href="#" class="hover:text-white transition-colors">Submit Information</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Press Inquiries</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">PGP Key</a></li>
+                        <li><a href="https://github.com/BrakkaDoemChain/prison-pics" class="hover:text-white transition-colors text-blue-400"><i class="fa-brands fa-github mr-1"></i> Git Repository</a></li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600">
-                <p>&copy; 2026 Prison.Pics. All rights reserved. Actual Information Network.</p>
+                <p>&copy; 2026 Prison.Pics. All rights reserved. Powered by BrakkaDoemChain Network.</p>
                 <div class="flex space-x-4 mt-4 md:mt-0">
                     <a href="#" class="hover:text-white"><i class="fa-brands fa-twitter"></i></a>
                     <a href="#" class="hover:text-white"><i class="fa-brands fa-github"></i></a>
