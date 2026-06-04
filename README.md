@@ -110,3 +110,4 @@ Anticlimactic, Cinematic 1080p, smooth motion, dreamlike atmospheric mood.
 - [Day 4 of prison.pics](logs/README-02-06-2026.md)
 - [Day 4 of prison.pics](logs/GROK&ME-02-06-2026.md)
 - [Day 5 of prison.pics](logs/README-03-06-2026.md)
+- [Day 6 of prison.pics](logs/README-04-06-2026.md)
