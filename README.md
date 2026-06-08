@@ -118,3 +118,5 @@ Raw
 
 - 06-06-vandaag - majah
 - opnieuw - vandaag - right nou
+
+- [08-06-2026 alweer](logs/README-08-06-2026.md)
