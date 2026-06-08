@@ -104,6 +104,17 @@ Er zijn er nog wel meer maar de meeste heb ik er wel tussen gestopt al. En ander
 The woman is sitting in her bedroom in the evening, she vomits foam from drinking to much beer and not eating anything, like a sillygirl woman, van oeps, in one smooth motion, but it keeps her pretty,
 Anticlimactic, Cinematic 1080p, smooth motion, dreamlike atmospheric mood.
 
-[Day 1 of prison.pics](logs/README-29-05-2026.md)
-[Day 2 of prison.pics](logs/README-30-05-2026.md)
-[Day 3 of prison.pics](logs/README-31-05-2026.md)
+- [Day 1 of prison.pics](logs/README-29-05-2026.md)
+- [Day 2 of prison.pics](logs/README-30-05-2026.md)
+- [Day 3 of prison.pics](logs/README-31-05-2026.md)
+- [Day 4 of prison.pics](logs/README-02-06-2026.md)
+- [Day 4 of prison.pics](logs/GROK&ME-02-06-2026.md)
+- [Day 5 of prison.pics](logs/README-03-06-2026.md)
+- [Day 6 of prison.pics](logs/README-04-06-2026.md)
+- - [Day 6 of today on prison.pics](logs/READmeplak-tandjes-candaaghog0-md.md)
+READmeplak-tandjes-candaaghog0-md.md
+
+Raw
+
+- 06-06-vandaag - majah
+- opnieuw - vandaag - right nou
