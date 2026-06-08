@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Realm Plus - Mythological Empire</title>
+    <!-- Tailwind CSS voor een premium donker fantasy uiterlijk -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP voor vloeiende animaties en interface effecten -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Three.js voor de 3D Total War Gevechtsarena -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&family=Montserrat:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #08080c;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .fantasy-title {
+            font-family: 'Cinzel', serif;
+        }
+        .fantasy-ui {
+            font-family: 'MedievalSharp', cursive;
+        }
+        .glass-panel {
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 179, 0, 0.15);
+        }
+        /* Custom Grid Styling voor SimCity Bouwen */
+        .grid-tile {
+            aspect-ratio: 1;
+            transition: all 0.2s ease;
+        }
+        .grid-tile:hover {
+            background-color: rgba(255, 179, 0, 0.1);
+            border-color: rgba(255, 179, 0, 0.4);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffb300;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button id="mute-btn" onclick="toggleMute()" class="glass-panel p-3 rounded-full text-amber-400 hover:text-amber-300 border border-amber-500/30 transition-all flex items-center justify-center">
+            <svg id="sound-on-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <svg id="sound-off-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm12.364-5.636l5.656 5.656m0-5.656l-5.656 5.656"/></svg>
+        </button>
+    </div>
+
+    <main class="flex-grow flex items-center justify-center p-4 md:p-6">
+        
+        <!-- INTRO & FACTION SELECTOR (Age of Mythology Style) -->
+        <div id="screen-creator" class="w-full max-w-6xl glass-panel rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            <header class="text-center mb-6 relative z-10">
+                <h1 class="fantasy-title text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-500 tracking-wider mb-1">
+                    FANTASY REALM PLUS
+                </h1>
+                <p class="text-amber-500/80 tracking-widest uppercase text-xs font-semibold">Sticht je rijk & ontketen de toorn van de goden</p>
+            </header>
+
+            <!-- Naam van je Rijk -->
+            <div class="max-w-md mx-auto mb-6 relative z-10">
+                <label class="block text-center text-xs font-semibold tracking-wider text-gray-400 mb-2 uppercase">Naam van je Rijk</label>
+                <input type="text" id="empire-name" placeholder="bijv. Romeinse Imperium, Elvoria..." class="w-full bg-slate-950/90 text-amber-100 placeholder-gray-600 border border-amber-500/30 rounded-lg py-3 px-4 text-center focus:outline-none focus:border-amber-400 transition-all font-semibold tracking-wide text-lg">
+            </div>
+
+            <!-- Faction Selection -->
+            <h2 class="text-center text-sm font-bold uppercase tracking-widest text-amber-400/90 mb-4">Kies je Ras & Beschermgod</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6 relative z-10" id="faction-container">
+                <!-- Wordt dynamisch gevuld -->
+            </div>
+
+            <!-- God & Race Informatie -->
+            <div id="faction-details" class="glass-panel rounded-xl p-5 mb-6 border border-white/5 opacity-0 transform translate-y-4">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <h3 id="faction-title" class="fantasy-title text-2xl font-bold text-amber-400 mb-1"></h3>
+                        <p id="faction-desc" class="text-gray-400 text-xs md:text-sm leading-relaxed mb-3"></p>
+                        <div class="grid grid-cols-2 gap-4 text-xs bg-black/40 p-3 rounded-lg border border-amber-500/10">
+                            <div><span class="text-amber-400 font-bold">Patroon Godheid:</span> <span id="deity-name" class="text-gray-300"></span></div>
+                            <div><span class="text-red-400 font-bold">Goddelijke Kracht:</span> <span id="god-power-desc" class="text-gray-300"></span></div>
+                            <div><span class="text-purple-400 font-bold">Mythische Eenheid:</span> <span id="myth-unit-desc" class="text-gray-300"></span></div>
+                            <div><span class="text-emerald-400 font-bold">Rassen Bonus:</span> <span id="race-bonus" class="text-gray-300"></span></div>
+                        </div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 border border-amber-500/10 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-2">Start Grondstoffen</h4>
+                            <div class="grid grid-cols-2 gap-y-1 text-xs">
+                                <span class="text-gray-500">Goud:</span><span class="text-yellow-400 font-bold text-right">300</span>
+                                <span class="text-gray-500">Hout:</span><span class="text-orange-400 font-bold text-right">250</span>
+                                <span class="text-gray-500">Voedsel:</span><span class="text-emerald-400 font-bold text-right">200</span>
+                                <span class="text-gray-500">Gunst:</span><span class="text-blue-400 font-bold text-right">50</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-amber-500/10">
+                            <span class="text-[10px] text-gray-400 italic">"Gunst verzamel je door priesters te laten bidden bij tempels!"</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center relative z-10">
+                <button onclick="startEmpire()" class="px-8 py-3.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black tracking-wider uppercase rounded-lg shadow-lg shadow-amber-500/20 transform hover:-translate-y-1 active:translate-y-0 transition-all duration-150 w-full sm:w-64">
+                    Sticht het Imperium
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-strategic" class="w-full max-w-7xl grid lg:grid-cols-12 gap-6 hidden">
+            
+            <!-- Linker Paneel: Grondstoffen & Stadsbeheer (SimCity) -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                
+                <!-- Resource Bar -->
+                <div class="glass-panel rounded-xl p-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-center items-center">
+                    <div class="flex items-center gap-2 justify-center border-r border-slate-800">
+                        <span class="text-2xl">🪙</span>
+                        <div class="text-left">
+                            <span class="text-[10px] text-gray-500 uppercase block">Goud</span>
+                            <span id="res-gold" class="text-sm font-black text-yellow-500">0</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center border-r border-slate-800">
+                        <span class="text-2xl">🪵</span>
+                        <div class="text-left">
+                            <span class="text-[10px] text-gray-500 uppercase block">Hout</span>
+                            <span id="res-wood" class="text-sm font-black text-amber-600">0</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center border-r border-slate-800">
+                        <span class="text-2xl">🌾</span>
+                        <div class="text-left">
+                            <span class="text-[10px] text-gray-500 uppercase block">Voedsel</span>
+                            <span id="res-food" class="text-sm font-black text-emerald-500">0</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center border-r border-slate-800">
+                        <span class="text-2xl">⚡</span>
+                        <div class="text-left">
+                            <span class="text-[10px] text-gray-500 uppercase block">Gunst</span>
+                            <span id="res-favor" class="text-sm font-black text-cyan-400">0</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center col-span-2 md:col-span-1">
+                        <span class="text-2xl">👥</span>
+                        <div class="text-left">
+                            <span class="text-[10px] text-gray-500 uppercase block">Bevolking</span>
+                            <span id="res-pop" class="text-sm font-black text-slate-300">0/0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SimCity Planner Grid -->
+                <div class="glass-panel rounded-xl p-4 flex flex-col">
+                    <div class="flex flex-wrap justify-between items-center mb-3">
+                        <div>
+                            <h3 class="fantasy-title text-lg font-black text-amber-400 uppercase">🏗️ Hoofdstad Planner (SimCity)</h3>
+                            <p class="text-[11px] text-gray-400">Klik op een kavel om gebouwen te plaatsen of upgraden.</p>
+                        </div>
+                        <div class="flex gap-2 mt-2 md:mt-0 text-[11px] font-bold">
+                            <button id="tool-demolish" onclick="setBuildTool('demolish')" class="px-2 py-1 bg-red-950 text-red-400 border border-red-800/30 rounded hover:bg-red-900 transition-all">Sloop Hamer 🔨</button>
+                        </div>
+                    </div>
+
+                    <!-- Build Grid -->
+                    <div id="city-grid" class="grid grid-cols-6 gap-2 bg-slate-950/80 p-3 rounded-lg border border-slate-800/80 max-h-[380px] overflow-y-auto">
+                        <!-- 36 tiles generated by Javascript -->
+                    </div>
+
+                    <!-- Bouwmenu -->
+                    <div class="mt-4 pt-3 border-t border-slate-800/60">
+                        <h4 class="text-xs font-bold uppercase text-amber-500 tracking-wider mb-2">Bouw opties</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                            <button onclick="buildStructure('house')" class="p-2 bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded text-left flex flex-col justify-between">
+                                <span class="font-bold">🏠 Huisvesting</span>
+                                <span class="text-[10px] text-gray-400">Geeft pop cap. 🪙50, 🪵40</span>
+                            </button>
+                            <button onclick="buildStructure('farm')" class="p-2 bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded text-left flex flex-col justify-between">
+                                <span class="font-bold">🌾 Boerderij</span>
+                                <span class="text-[10px] text-gray-400">+10 Voedsel/sec. 🪙40, 🪵50</span>
+                            </button>
+                            <button onclick="buildStructure('barracks')" class="p-2 bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded text-left flex flex-col justify-between">
+                                <span class="font-bold">⚔️ Kazerne</span>
+                                <span class="text-[10px] text-gray-400">Laat legers trainen. 🪙100, 🪵80</span>
+                            </button>
+                            <button onclick="buildStructure('temple')" class="p-2 bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded text-left flex flex-col justify-between">
+                                <span class="font-bold">🏛️ Tempel</span>
+                                <span class="text-[10px] text-gray-400">+5 Gunst/sec. 🪙120, 🪵100</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Rechter Paneel: Legerbeheer & Total War World Conquest -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                
+                <!-- Empire & Faction Dashboard -->
+                <div class="glass-panel rounded-xl p-4">
+                    <div class="flex items-center gap-3">
+                        <div id="empire-avatar" class="text-3xl bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">👑</div>
+                        <div>
+                            <h3 id="display-empire-name" class="fantasy-title text-base font-bold text-amber-400">Romeins Imperium</h3>
+                            <p id="display-faction-race" class="text-[10px] text-gray-400 uppercase tracking-widest">Mensen &bull; Jupiter</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total War Leger Rekruteringspaneel -->
+                <div class="glass-panel rounded-xl p-4 flex-grow flex flex-col">
+                    <h3 class="fantasy-title text-sm font-black text-amber-400 uppercase mb-2">⚔️ Rome: Total War Legioenen</h3>
+                    <p class="text-[10px] text-gray-500 mb-3">Bouw je legers om provincies aan te vallen. Kost voedsel & goud.</p>
+                    
+                    <div class="space-y-2 flex-grow overflow-y-auto max-h-[220px] pr-1">
+                        <!-- Legionairs -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                            <div>
+                                <h4 class="font-bold text-slate-300">Legionair Cohort 🛡️</h4>
+                                <p class="text-[9px] text-gray-400">Fysieke frontlijn & verdediging</p>
+                            </div>
+                            <button onclick="trainUnit('infantry')" class="px-2 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold uppercase rounded transition-all">
+                                🪙40 🌾20
+                            </button>
+                        </div>
+                        <!-- Boogschutters -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                            <div>
+                                <h4 class="font-bold text-slate-300">Boogschutters 🏹</h4>
+                                <p class="text-[9px] text-gray-400">Hoge afstandsschade</p>
+                            </div>
+                            <button onclick="trainUnit('archer')" class="px-2 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold uppercase rounded transition-all">
+                                🪙50 🌾15
+                            </button>
+                        </div>
+                        <!-- Mythisch Beest -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                            <div>
+                                <h4 id="myth-unit-name" class="font-bold text-purple-400">Mythisch Wezen 🐲</h4>
+                                <p class="text-[9px] text-gray-400">Goddelijk monster, enorme aanvalskracht</p>
+                            </div>
+                            <button onclick="trainUnit('myth')" class="px-2 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold uppercase rounded transition-all">
+                                🪙100 ⚡40
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Huidig Leger Stats -->
+                    <div class="bg-black/40 p-3 rounded-lg border border-slate-800/60 text-xs mt-3">
+                        <h4 class="font-bold text-gray-400 mb-2 uppercase tracking-wider text-[10px]">Huidig Leger</h4>
+                        <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                            <div class="bg-slate-900 p-1.5 rounded">
+                                <span class="text-[9px] text-gray-500 block">Cohorten</span>
+                                <span id="army-infantry" class="font-black text-amber-400">0</span>
+                            </div>
+                            <div class="bg-slate-900 p-1.5 rounded">
+                                <span class="text-[9px] text-gray-500 block">Boogschutters</span>
+                                <span id="army-archers" class="font-black text-amber-400">0</span>
+                            </div>
+                            <div class="bg-slate-900 p-1.5 rounded">
+                                <span class="text-[9px] text-gray-500 block">Beesten</span>
+                                <span id="army-myth" class="font-black text-purple-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- World Campaign Map (Conquest) -->
+                <div class="glass-panel rounded-xl p-4">
+                    <h3 class="fantasy-title text-sm font-black text-amber-400 uppercase mb-2">🗺️ Provincies te Veroveren</h3>
+                    <div class="space-y-2">
+                        <button onclick="launchCampaign(0)" class="w-full text-left p-2.5 bg-gradient-to-r from-red-950/40 to-slate-900 border border-red-800/20 hover:border-red-500/40 rounded flex justify-between items-center text-xs transition-all">
+                            <div>
+                                <span class="font-bold block text-red-400">De Wilde Vallei (Moeilijkheid: ⭐)</span>
+                                <span class="text-[9px] text-gray-400">Beloning: 🪙250 &bull; Hout 🪵200</span>
+                            </div>
+                            <span class="text-[10px] bg-red-950 text-red-400 px-2 py-1 rounded">AANVALLEN</span>
+                        </button>
+                        <button onclick="launchCampaign(1)" class="w-full text-left p-2.5 bg-gradient-to-r from-red-950/40 to-slate-900 border border-red-800/20 hover:border-red-500/40 rounded flex justify-between items-center text-xs transition-all">
+                            <div>
+                                <span class="font-bold block text-purple-400">Het Schaduwbos (Moeilijkheid: ⭐⭐)</span>
+                                <span class="text-[9px] text-gray-400">Beloning: 🪙400 &bull; Gunst ⚡80</span>
+                            </div>
+                            <span class="text-[10px] bg-red-950 text-red-400 px-2 py-1 rounded">AANVALLEN</span>
+                        </button>
+                        <button onclick="launchCampaign(2)" class="w-full text-left p-2.5 bg-gradient-to-r from-red-950/40 to-slate-900 border border-red-800/20 hover:border-red-500/40 rounded flex justify-between items-center text-xs transition-all">
+                            <div>
+                                <span class="font-bold block text-yellow-500">Drakenberg (Moeilijkheid: ⭐⭐⭐)</span>
+                                <span class="text-[9px] text-gray-400">Beloning: 🪙800 &bull; Alle bronnen</span>
+                            </div>
+                            <span class="text-[10px] bg-red-950 text-red-400 px-2 py-1 rounded">AANVALLEN</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="screen-battle" class="w-full max-w-7xl grid lg:grid-cols-12 gap-6 hidden">
+            
+            <!-- Linker Paneel: 3D Battlefield & God Powers -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                
+                <div class="glass-panel rounded-xl p-4 relative min-h-[420px] flex flex-col justify-between">
+                    <!-- Status Header -->
+                    <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 bg-red-500 animate-ping rounded-full"></span>
+                        <span id="battle-status-text" class="text-xs font-black tracking-widest text-red-500 uppercase">VELDSLAG ACTIEF</span>
+                    </div>
+                    <div class="absolute top-4 right-4 z-10 text-xs text-slate-500 pointer-events-none">
+                        Sleep om camera te draaien
+                    </div>
+
+                    <!-- ThreeJS Container -->
+                    <div id="battle-canvas-container" class="w-full flex-grow rounded-lg overflow-hidden bg-slate-950 relative min-h-[340px] h-[360px]">
+                        <!-- Floating damage indicators overlay -->
+                        <div id="battle-damage-overlay" class="absolute inset-0 pointer-events-none z-20"></div>
+                    </div>
+
+                    <!-- Real-Time Total War Formation Health Bars -->
+                    <div class="grid grid-cols-2 gap-4 mt-3 relative z-10">
+                        <div class="bg-black/50 p-2.5 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-emerald-400 font-bold block">JOUW ALLIANTIE COHORTEN</span>
+                            <div class="w-full h-2 bg-slate-950 rounded-full mt-1 overflow-hidden">
+                                <div id="battle-player-army-bar" class="h-full bg-emerald-500 transition-all duration-150" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-black/50 p-2.5 rounded-lg border border-slate-800">
+                            <div class="flex justify-between items-center">
+                                <span id="battle-enemy-name" class="text-[10px] text-red-400 font-bold block">VIJANDIG LEGER</span>
+                                <span id="battle-enemy-count" class="text-[9px] text-gray-500">0 Units</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-950 rounded-full mt-1 overflow-hidden">
+                                <div id="battle-enemy-army-bar" class="h-full bg-red-500 transition-all duration-150" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Age of Mythology: God Powers & Special abilities -->
+                <div class="glass-panel rounded-xl p-5">
+                    <h3 class="fantasy-title text-sm font-black text-amber-400 uppercase mb-3">⚡ Age of Mythology: Goddelijke Interventie</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <button id="god-power-btn" onclick="triggerGodPower()" class="p-3 bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg text-xs font-black flex flex-col items-center justify-center gap-1 shadow-lg transition-all transform active:scale-95">
+                            <span class="text-xl">⚡</span>
+                            <span id="god-power-name">GOD KRACHT</span>
+                            <span class="text-[9px] text-amber-300">Kost: 30 Gunst</span>
+                        </button>
+                        <button onclick="triggerTacticalOrder('retreat')" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-black flex flex-col items-center justify-center gap-1 transition-all">
+                            <span class="text-xl">🏃</span>
+                            <span>Tactische Terugtocht</span>
+                            <span class="text-[9px] text-gray-500">Red je Cohorten</span>
+                        </button>
+                        <button onclick="triggerTacticalOrder('charge')" class="p-3 bg-red-950/60 border border-red-800/40 hover:border-red-500 text-red-400 rounded-lg text-xs font-black flex flex-col items-center justify-center gap-1 transition-all">
+                            <span class="text-xl">🔥</span>
+                            <span>Brute Charge</span>
+                            <span class="text-[9px] text-red-600 font-bold">+20% Aanval</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Rechter Paneel: Battle Stats & Battle Logs -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                
+                <div class="glass-panel rounded-xl p-5 flex flex-col h-full justify-between">
+                    <div>
+                        <h3 class="fantasy-title text-base font-black text-amber-400 uppercase mb-3">📋 Gevechtsverslag</h3>
+                        <div class="bg-black/40 p-3 rounded-lg border border-slate-800/80 text-xs mb-4">
+                            <div class="grid grid-cols-2 gap-y-1.5">
+                                <span class="text-gray-500">Militair Krachtsverschil:</span>
+                                <span id="stat-combat-ratio" class="font-bold text-right text-amber-300">1:1</span>
+                                
+                                <span class="text-gray-500">Jouw Cohorten:</span>
+                                <span id="stat-player-units" class="font-bold text-right text-emerald-400">0</span>
+                                
+                                <span class="text-gray-500">Vijandige Cohorten:</span>
+                                <span id="stat-enemy-units" class="font-bold text-right text-red-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gevechtslogboek (Total War style ticker) -->
+                    <div class="flex-grow flex flex-col">
+                        <h4 class="text-xs font-black uppercase text-amber-500 tracking-wider mb-2">Tactische Gevechtsfeed</h4>
+                        <div id="battle-logs" class="flex-grow overflow-y-auto space-y-2 text-[11px] text-gray-400 bg-black/20 p-3 rounded-lg border border-slate-900 h-[210px] max-h-[220px]">
+                            <p class="italic text-gray-500">Legionairs nemen hun formatie in...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Custom Modals voor Meldingen -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/85 backdrop-filter backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0">
+        <div class="glass-panel rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 text-center border border-amber-500/30">
+            <div id="modal-icon" class="text-5xl mb-4">👑</div>
+            <h3 id="modal-title" class="fantasy-title text-2xl font-black text-amber-400 mb-2"></h3>
+            <p id="modal-body" class="text-gray-300 text-xs md:text-sm mb-6 leading-relaxed"></p>
+            <button onclick="closeModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black uppercase rounded-lg tracking-wider hover:from-amber-400 transition-all">
+                Sluiten
+            </button>
+        </div>
+    </div>
+
+    <!-- VOOTER -->
+    <footer class="w-full text-center py-3 text-slate-600 text-[9px] tracking-widest uppercase border-t border-slate-950 glass-panel">
+        Fantasy Realm Plus &bull; SimCity &bull; Rome: Total War &bull; Age of Mythology
+    </footer>
+
+    <script>
+        const factions = {
+            human: {
+                name: "Mensen",
+                emoji: "🧔",
+                deity: "Sol",
+                godPower: "Meteorenregen",
+                mythUnit: "Gouden Kolos",
+                bonus: "+20% Goud productie",
+                desc: "Het Romeinse Rijk van de Mensen blinkt uit in ijzersterke stadsarchitectuur en economische voordelen. Hun God Sol kan het slagveld doen smelten.",
+                color: 0xffcc00,
+                particleColor: 0xff3300
+            },
+            elf: {
+                name: "Elfen",
+                emoji: "🧝",
+                deity: "Eluna",
+                godPower: "Natuurstof / Bos Toorn",
+                mythUnit: "Smaragd Phoenix",
+                bonus: "+20% Hout productie",
+                desc: "Diep verbonden met het bos, de Elfen bouwen sierlijke steden en domineren met boogschutters. Eluna beschermt hen met de toorn van de natuur.",
+                color: 0x00ff88,
+                particleColor: 0x00ffcc
+            },
+            orc: {
+                name: "Orks",
+                emoji: "👹",
+                deity: "Grom",
+                godPower: "Aardbeving",
+                mythUnit: "Vulkanische Behemoth",
+                bonus: "+15% Barracks bouwkorting",
+                desc: "Orks heersen door brute kracht en vulkanische destructie. Hun steden zijn gigantische kampen die ontzagwekkende legers uitspugen.",
+                color: 0xff3300,
+                particleColor: 0xaa0000
+            },
+            dwarf: {
+                name: "Dwergen",
+                emoji: "🎅",
+                deity: "Moradin",
+                godPower: "Berginstorting",
+                mythUnit: "Runengolem",
+                bonus: "Gebouwen kosten -15% Hout",
+                desc: "Dwergen zijn meesterlijke bouwers en bergbewoners. Hun legers zijn onverwoestbaar en hun tempels genereren snel goddelijke gunst.",
+                color: 0xd4af37,
+                particleColor: 0xffaa00
+            },
+            dark_elf: {
+                name: "Duistere Elfen",
+                emoji: "🧝‍♀️",
+                deity: "Malgath",
+                godPower: "Schaduwflits",
+                mythUnit: "Abyssal Reaper",
+                bonus: "+20% Start-Gunst (Favor)",
+                desc: "De schaduwen gehoorzamen de Duistere Elfen. Hun mythische monsters zaaien paniek in vijandige gelederen onder dekking van de nacht.",
+                color: 0xaa00ff,
+                particleColor: 0x330066
+            },
+            troll: {
+                name: "Trollen",
+                emoji: "🧟",
+                deity: "Ymir",
+                godPower: "Bliksemstorm",
+                mythUnit: "Rots Titan",
+                bonus: "+20% Voedsel productie",
+                desc: "Trollen leven in gigantische modder- en steenforten. Hun gigantische formaat en regeneratiekrachten maken ze angstaanjagend in de frontlinie.",
+                color: 0x557733,
+                particleColor: 0x00ffff
+            },
+            vampire: {
+                name: "Vampieren",
+                emoji: "🧛",
+                deity: "Morana",
+                godPower: "Levensonttrekking",
+                mythUnit: "Vampier Monarch",
+                bonus: "Verslagen vijanden geven Goud",
+                desc: "De bloedlijn van Vampieren heerst over donkere burchten. Ze putten kracht uit de zielen en levensenergie van hun veroverde vijanden.",
+                color: 0xff0055,
+                particleColor: 0xff0044
+            }
+        };
+
+        // SimCity Map configuration
+        const gridRows = 6;
+        const gridCols = 6;
+        let cityMap = Array(gridRows * gridCols).fill(null); // Slaat gebouwentypes op
+        let selectedBuildTool = null; // 'demolish' of gebouwentype
+
+        // Faction & Resources state
+        let activeFactionKey = "human";
+        let gameState = {
+            empireName: "",
+            level: 1,
+            resources: {
+                gold: 300,
+                wood: 250,
+                food: 200,
+                favor: 50
+            },
+            maxPopulation: 20,
+            population: 0,
+            army: {
+                infantry: 0,
+                archers: 0,
+                myth: 0
+            }
+        };
+
+        // Audio System State
+        let audioCtx = null;
+        let audioMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (audioMuted) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'build') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(300, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'recruit') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'godpower') {
+                    // Episch neerdalend en ronkend geluid
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.6);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'clash') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(80, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'demolish') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(20, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio API issue:", e);
+            }
+        }
+
+        function toggleMute() {
+            audioMuted = !audioMuted;
+            document.getElementById('sound-on-icon').classList.toggle('hidden', audioMuted);
+            document.getElementById('sound-off-icon').classList.toggle('hidden', !audioMuted);
+        }
+
+        window.onload = function() {
+            // Build the dynamic Faction selection grid
+            const container = document.getElementById('faction-container');
+            let first = true;
+
+            for (const key in factions) {
+                const fac = factions[key];
+                const card = document.createElement('div');
+                card.id = `fac-${key}`;
+                card.className = `glass-panel cursor-pointer p-3 rounded-xl text-center border transition-all flex flex-col items-center justify-center ${first ? 'border-amber-400 bg-amber-500/10' : 'border-slate-800 hover:border-amber-500/30'}`;
+                card.innerHTML = `
+                    <div class="text-3xl mb-1">${fac.emoji}</div>
+                    <div class="text-[11px] font-black uppercase tracking-wider text-amber-300">${fac.name}</div>
+                `;
+                card.onclick = () => {
+                    playSound('build');
+                    selectFaction(key);
+                };
+                container.appendChild(card);
+                
+                if (first) {
+                    selectFaction(key);
+                    first = false;
+                }
+            }
+
+            // GSAP animatie voor de selectiekaarten
+            gsap.from("#faction-container > div", {
+                duration: 0.5,
+                y: 20,
+                opacity: 0,
+                stagger: 0.05,
+                ease: "power2.out"
+            });
+
+            // Bouw de 36 kavels voor SimCity grid
+            buildCityGridUI();
+
+            // Start de automatische grondstof-inkomsten loop (SimCity ticker)
+            setInterval(simCityTick, 2000);
+        };
+
+        function selectFaction(key) {
+            activeFactionKey = key;
+            const fac = factions[key];
+
+            // Update geselecteerde kaartstijl
+            for (const k in factions) {
+                const card = document.getElementById(`fac-${k}`);
+                if (card) {
+                    if (k === key) {
+                        card.classList.add('border-amber-400', 'bg-amber-500/10');
+                    } else {
+                        card.classList.remove('border-amber-400', 'bg-amber-500/10');
+                    }
+                }
+            }
+
+            // Update details met GSAP fade-in
+            const details = document.getElementById('faction-details');
+            gsap.to(details, {
+                duration: 0.15,
+                opacity: 0,
+                y: 10,
+                onComplete: () => {
+                    document.getElementById('faction-title').innerHTML = `${fac.emoji} ${fac.name}`;
+                    document.getElementById('faction-desc').innerText = fac.desc;
+                    document.getElementById('deity-name').innerText = fac.deity;
+                    document.getElementById('god-power-desc').innerText = fac.godPower;
+                    document.getElementById('myth-unit-desc').innerText = fac.mythUnit;
+                    document.getElementById('race-bonus').innerText = fac.bonus;
+
+                    gsap.to(details, {
+                        duration: 0.3,
+                        opacity: 1,
+                        y: 0,
+                        ease: "power2.out"
+                    });
+                }
+            });
+        }
+
+        function buildCityGridUI() {
+            const gridContainer = document.getElementById('city-grid');
+            gridContainer.innerHTML = '';
+
+            for (let i = 0; i < gridRows * gridCols; i++) {
+                const tile = document.createElement('div');
+                tile.className = "grid-tile bg-slate-900/60 border border-slate-800/80 rounded-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer text-xs relative";
+                tile.id = `tile-${i}`;
+                tile.onclick = () => handleTileClick(i);
+                
+                // Leeg kavel
+                tile.innerHTML = `<span class="text-slate-700 text-[10px] uppercase font-bold">Kavel</span>`;
+                gridContainer.appendChild(tile);
+            }
+        }
+
+        function setBuildTool(tool) {
+            playSound('build');
+            const demolishBtn = document.getElementById('tool-demolish');
+            if (selectedBuildTool === 'demolish') {
+                selectedBuildTool = null;
+                demolishBtn.classList.remove('bg-red-500', 'text-white');
+                demolishBtn.classList.add('bg-red-950', 'text-red-400');
+            } else {
+                selectedBuildTool = 'demolish';
+                demolishBtn.classList.add('bg-red-500', 'text-white');
+                demolishBtn.classList.remove('bg-red-950', 'text-red-400');
+            }
+        }
+
+        function buildStructure(type) {
+            playSound('build');
+            // Selecteer dit gebouw om te plaatsen op een kavel
+            selectedBuildTool = type;
+            document.getElementById('tool-demolish').classList.remove('bg-red-500', 'text-white');
+            document.getElementById('tool-demolish').classList.add('bg-red-950', 'text-red-400');
+        }
+
+        function handleTileClick(index) {
+            if (!selectedBuildTool) {
+                showModal("🔨 Bouw Tool", "Selecteer eerst een gebouw onderin de opties om op dit kavel te plaatsen!", "🏗️");
+                return;
+            }
+
+            const current = cityMap[index];
+
+            if (selectedBuildTool === 'demolish') {
+                if (!current) return;
+                playSound('demolish');
+                cityMap[index] = null;
+                const tile = document.getElementById(`tile-${index}`);
+                tile.innerHTML = `<span class="text-slate-700 text-[10px] uppercase font-bold">Kavel</span>`;
+                tile.className = "grid-tile bg-slate-900/60 border border-slate-800/80 rounded-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer text-xs relative";
+                recalculateLimits();
+                return;
+            }
+
+            // Kosten controleren
+            const costs = {
+                house: { gold: 50, wood: 40 },
+                farm: { gold: 40, wood: 50 },
+                barracks: { gold: 100, wood: 80 },
+                temple: { gold: 120, wood: 100 }
+            };
+
+            const cost = costs[selectedBuildTool];
+
+            // Pas dwergen korting toe
+            if (activeFactionKey === 'dwarf') {
+                cost.wood = Math.floor(cost.wood * 0.85);
+            }
+
+            if (gameState.resources.gold < cost.gold || gameState.resources.wood < cost.wood) {
+                showModal("❌ Te Weinig Grondstoffen", "Je hebt niet genoeg Goud of Hout om dit te bouwen!", "🪙");
+                return;
+            }
+
+            // Betaal kosten
+            gameState.resources.gold -= cost.gold;
+            gameState.resources.wood -= cost.wood;
+
+            // Plaats gebouw
+            cityMap[index] = selectedBuildTool;
+            playSound('build');
+
+            const tile = document.getElementById(`tile-${index}`);
+            
+            // GSAP animatie voor plaatsing
+            gsap.fromTo(tile, { scale: 0.8, rotate: -5 }, { duration: 0.25, scale: 1, rotate: 0, ease: "back.out(1.5)" });
+
+            // Visualiseer gebouw
+            let icon = "🏠";
+            let name = "Huis";
+            let colorClass = "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+
+            if (selectedBuildTool === 'farm') {
+                icon = "🌾";
+                name = "Boerderij";
+                colorClass = "border-orange-500/30 bg-orange-500/10 text-orange-300";
+            } else if (selectedBuildTool === 'barracks') {
+                icon = "⚔️";
+                name = "Kazerne";
+                colorClass = "border-red-500/30 bg-red-500/10 text-red-300";
+            } else if (selectedBuildTool === 'temple') {
+                icon = "🏛️";
+                name = "Tempel";
+                colorClass = "border-blue-500/30 bg-blue-500/10 text-blue-300";
+            }
+
+            tile.className = `grid-tile border rounded-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer text-xs relative ${colorClass}`;
+            tile.innerHTML = `
+                <span class="text-2xl">${icon}</span>
+                <span class="text-[9px] font-bold uppercase mt-1 block">${name}</span>
+            `;
+
+            recalculateLimits();
+            updateResourcesUI();
+        }
+
+        function recalculateLimits() {
+            let houses = 0;
+            cityMap.forEach(b => {
+                if (b === 'house') houses++;
+            });
+
+            // Basis pop cap = 10, elk huis voegt +10 toe
+            gameState.maxPopulation = 10 + (houses * 10);
+            updateResourcesUI();
+        }
+
+        // Inkomsten berekenen (SimCity ticks)
+        function simCityTick() {
+            let farms = 0;
+            let temples = 0;
+            let barracks = 0;
+            let houses = 0;
+
+            cityMap.forEach(b => {
+                if (b === 'farm') farms++;
+                if (b === 'temple') temples++;
+                if (b === 'barracks') barracks++;
+                if (b === 'house') houses++;
+            });
+
+            // Basis inkomsten
+            let goldIncome = 15;
+            let woodIncome = 10;
+            let foodIncome = farms * 12;
+            let favorIncome = temples * 6;
+
+            // Pas rassenbonussen toe
+            if (activeFactionKey === 'human') goldIncome = Math.floor(goldIncome * 1.2);
+            if (activeFactionKey === 'elf') woodIncome = Math.floor(woodIncome * 1.2);
+            if (activeFactionKey === 'troll') foodIncome = Math.floor(foodIncome * 1.2);
+
+            // Goud genereert ook passief op basis van je bevolking (belastingen!)
+            goldIncome += Math.floor(gameState.population * 1.5);
+
+            // Voedsel consumptie door bevolking
+            foodIncome -= Math.floor(gameState.population * 0.5);
+
+            gameState.resources.gold += goldIncome;
+            gameState.resources.wood += woodIncome;
+            gameState.resources.food += foodIncome;
+            gameState.resources.favor += favorIncome;
+
+            // Bevolkingsgroei als er genoeg voedsel is en er ruimte is
+            if (gameState.population < gameState.maxPopulation && gameState.resources.food > 50) {
+                gameState.population += 1;
+            }
+
+            updateResourcesUI();
+        }
+
+        function updateResourcesUI() {
+            document.getElementById('res-gold').innerText = gameState.resources.gold;
+            document.getElementById('res-wood').innerText = gameState.resources.wood;
+            document.getElementById('res-food').innerText = gameState.resources.food;
+            document.getElementById('res-favor').innerText = gameState.resources.favor;
+            document.getElementById('res-pop').innerText = `${gameState.population}/${gameState.maxPopulation}`;
+
+            // Update barracks/rekruteringsknop status
+            const barracksExist = cityMap.includes('barracks');
+            const btns = document.querySelectorAll('#screen-strategic button[onclick^="trainUnit"]');
+            btns.forEach(btn => {
+                btn.disabled = !barracksExist;
+                if (!barracksExist) {
+                    btn.classList.add('opacity-40', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-40', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function trainUnit(type) {
+            // Eerst controleren of er een barracks is gebouwd (SimCity regel!)
+            if (!cityMap.includes('barracks')) {
+                showModal("⚔️ Kazerne Vereist", "Bouw eerst een Kazerne (⚔️) op de hoofdstadplanner om legionairs te kunnen trainen!", "🏠");
+                return;
+            }
+
+            const costs = {
+                infantry: { gold: 40, food: 20, favor: 0 },
+                archer: { gold: 50, food: 15, favor: 0 },
+                myth: { gold: 100, food: 0, favor: 40 }
+            };
+
+            const cost = costs[type];
+
+            // Pas ork korting toe
+            if (activeFactionKey === 'orc' && (type === 'infantry' || type === 'archer')) {
+                cost.gold = Math.floor(cost.gold * 0.85);
+            }
+
+            if (gameState.resources.gold < cost.gold || gameState.resources.food < cost.food || gameState.resources.favor < cost.favor) {
+                showModal("❌ Te Weinig Grondstoffen", "Je hebt niet genoeg grondstoffen of goddelijke gunst om dit cohort te trainen!", "⚡");
+                return;
+            }
+
+            // Controleer population space
+            if (gameState.population >= gameState.maxPopulation) {
+                showModal("👥 Bevolkingslimiet Bereikt", "Bouw meer Huizen (🏠) op je planner om je legers te kunnen huisvesten!", "🏠");
+                return;
+            }
+
+            gameState.resources.gold -= cost.gold;
+            gameState.resources.food -= cost.food;
+            gameState.resources.favor -= cost.favor;
+            
+            // Rekruteer unit
+            gameState.army[type] += 1;
+            gameState.population += 1; // Militaire dienst telt mee voor bevolking
+
+            playSound('recruit');
+            updateResourcesUI();
+            updateArmyUI();
+        }
+
+        function updateArmyUI() {
+            document.getElementById('army-infantry').innerText = gameState.army.infantry;
+            document.getElementById('army-archers').innerText = gameState.army.archers;
+            document.getElementById('army-myth').innerText = gameState.army.myth;
+        }
+
+        // START EMPIRE CAMPAIGN
+        function startEmpire() {
+            const name = document.getElementById('empire-name').value.trim();
+            if (!name) {
+                showModal("🚨 Oeps!", "Voer eerst een dapper naam in voor jouw rijk voordat je begint.", "🛡️");
+                return;
+            }
+
+            playSound('recruit');
+            gameState.empireName = name;
+
+            // UI Initialisaties
+            document.getElementById('display-empire-name').innerText = gameState.empireName;
+            const fac = factions[activeFactionKey];
+            document.getElementById('display-faction-race').innerHTML = `${fac.name} &bull; ${fac.deity}`;
+            document.getElementById('myth-unit-name').innerText = fac.mythUnit;
+            document.getElementById('god-power-name').innerText = fac.godPower.toUpperCase();
+
+            // Systeembetalingen start
+            updateResourcesUI();
+            updateArmyUI();
+
+            // Transitie naar strategisch scherm via GSAP
+            gsap.to("#screen-creator", {
+                duration: 0.4,
+                opacity: 0,
+                scale: 0.95,
+                onComplete: () => {
+                    document.getElementById('screen-creator').classList.add('hidden');
+                    const strategicScreen = document.getElementById('screen-strategic');
+                    strategicScreen.classList.remove('hidden');
+                    gsap.fromTo(strategicScreen, 
+                        { opacity: 0, scale: 1.05 },
+                        { duration: 0.5, opacity: 1, scale: 1, ease: "power2.out" }
+                    );
+                }
+            });
+        }
+
+
+        let battleScene, battleCamera, battleRenderer;
+        let pCohortGroup, eCohortGroup; // Cohorten/Formatiemodel groepen
+        let combatActive = false;
+        let combatRatio = 1.0;
+        let playerStrength = 0;
+        let enemyStrength = 0;
+        let maxPlayerStrength = 0;
+        let maxEnemyStrength = 0;
+        let battleTimer = null;
+        let currentCampaignIndex = 0;
+
+        const campaignTargets = [
+            { name: "Wilde Vallei", infantry: 2, archers: 1, myth: 0, rewardGold: 250, rewardWood: 200, rewardFavor: 0, scale: 0.8, color: 0x55aa22 },
+            { name: "Schaduwbos", infantry: 4, archers: 3, myth: 1, rewardGold: 400, rewardWood: 0, rewardFavor: 80, scale: 0.9, color: 0xaa22ff },
+            { name: "Drakenberg", infantry: 8, archers: 6, myth: 3, rewardGold: 800, rewardWood: 400, rewardFavor: 100, scale: 1.1, color: 0xff4400 }
+        ];
+
+        function initBattleThree() {
+            const container = document.getElementById('battle-canvas-container');
+            if (battleRenderer) return; // Alleen één keer initialiseren
+
+            battleScene = new THREE.Scene();
+            battleScene.fog = new THREE.FogExp2(0x0a0a0f, 0.05);
+
+            battleCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            battleCamera.position.set(0, 7, 13);
+            battleCamera.lookAt(0, 0, 0);
+
+            battleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            battleRenderer.setSize(container.clientWidth, container.clientHeight);
+            battleRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(battleRenderer.domElement);
+
+            // Verlichting
+            const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+            battleScene.add(ambient);
+
+            const point = new THREE.PointLight(0xffaa00, 2.0, 30);
+            point.position.set(0, 8, 0);
+            battleScene.add(point);
+
+            // Platform/Battlefield vloer
+            const fieldGeo = new THREE.BoxGeometry(16, 0.2, 10);
+            const fieldMat = new THREE.MeshStandardMaterial({ color: 0x181824, roughness: 0.8 });
+            const ground = new THREE.Mesh(fieldGeo, fieldMat);
+            ground.position.y = -0.1;
+            battleScene.add(ground);
+
+            // Start de render loop
+            animateBattle();
+        }
+
+        function animateBattle() {
+            requestAnimationFrame(animateBattle);
+
+            if (pCohortGroup && combatActive) {
+                // Legers marcheren en schudden lichtjes (clashing!)
+                pCohortGroup.position.x = Math.min(-1, pCohortGroup.position.x + 0.02);
+                pCohortGroup.position.y = Math.sin(Date.now() * 0.015) * 0.05;
+            }
+            if (eCohortGroup && combatActive) {
+                eCohortGroup.position.x = Math.max(1, eCohortGroup.position.x - 0.02);
+                eCohortGroup.position.y = Math.cos(Date.now() * 0.015) * 0.05;
+            }
+
+            // Update particle effects
+            for (let i = battleParticles.length - 1; i >= 0; i--) {
+                const p = battleParticles[i];
+                p.mesh.position.add(p.velocity);
+                p.mesh.scale.multiplyScalar(0.95);
+                p.life -= 1;
+                if (p.life <= 0) {
+                    battleScene.remove(p.mesh);
+                    battleParticles.splice(i, 1);
+                }
+            }
+
+            battleRenderer.render(battleScene, battleCamera);
+        }
+
+        function setupBattle3D(facColor, enemyColor) {
+            if (pCohortGroup) battleScene.remove(pCohortGroup);
+            if (eCohortGroup) battleScene.remove(eCohortGroup);
+
+            pCohortGroup = new THREE.Group();
+            eCohortGroup = new THREE.Group();
+
+            // Bouw jouw cohort formatie (Rome: Total War stijl)
+            // Infanterie = Boxen, Boogschutters = Cylinders, Mythisch = Piramides
+            const infGeo = new THREE.BoxGeometry(0.35, 0.35, 0.35);
+            const infMat = new THREE.MeshStandardMaterial({ color: facColor, roughness: 0.2 });
+
+            const archGeo = new THREE.CylinderGeometry(0.1, 0.2, 0.5, 8);
+            const archMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.5 });
+
+            const mythGeo = new THREE.ConeGeometry(0.5, 1.0, 4);
+            const mythMat = new THREE.MeshStandardMaterial({ color: 0xaa00ff, roughness: 0.1, emissive: 0x330033 });
+
+            // Jouw Cohorten positioneren
+            let spacing = 0.5;
+            for (let i = 0; i < Math.min(10, gameState.army.infantry); i++) {
+                const mesh = new THREE.Mesh(infGeo, infMat);
+                mesh.position.set(-3.5 - (i * spacing * 0.2), 0.2, (i % 3) * spacing - spacing);
+                pCohortGroup.add(mesh);
+            }
+            for (let i = 0; i < Math.min(8, gameState.army.archers); i++) {
+                const mesh = new THREE.Mesh(archGeo, archMat);
+                mesh.position.set(-4.5 - (i * spacing * 0.2), 0.25, (i % 3) * spacing - spacing);
+                pCohortGroup.add(mesh);
+            }
+            for (let i = 0; i < Math.min(4, gameState.army.myth); i++) {
+                const mesh = new THREE.Mesh(mythGeo, mythMat);
+                mesh.position.set(-5.5, 0.5, (i % 2) * spacing - 0.25);
+                pCohortGroup.add(mesh);
+            }
+
+            // Vijand cohorten positioneren
+            const target = campaignTargets[currentCampaignIndex];
+            const eInfMat = new THREE.MeshStandardMaterial({ color: enemyColor, roughness: 0.5 });
+
+            for (let i = 0; i < Math.min(10, target.infantry); i++) {
+                const mesh = new THREE.Mesh(infGeo, eInfMat);
+                mesh.position.set(3.5 + (i * spacing * 0.2), 0.2, (i % 3) * spacing - spacing);
+                eCohortGroup.add(mesh);
+            }
+            for (let i = 0; i < Math.min(8, target.archers); i++) {
+                const mesh = new THREE.Mesh(archGeo, archMat);
+                mesh.position.set(4.5 + (i * spacing * 0.2), 0.25, (i % 3) * spacing - spacing);
+                eCohortGroup.add(mesh);
+            }
+            if (target.myth > 0) {
+                const mesh = new THREE.Mesh(mythGeo, mythMat);
+                mesh.position.set(5.5, 0.5, 0);
+                eCohortGroup.add(mesh);
+            }
+
+            battleScene.add(pCohortGroup);
+            battleScene.add(eCohortGroup);
+        }
+
+        let battleParticles = [];
+        function spawnBattleBlast(position, colorHex, count = 15) {
+            const geo = new THREE.SphereGeometry(0.08, 4, 4);
+            const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+
+            for (let i = 0; i < count; i++) {
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.copy(position);
+                const velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.15,
+                    (Math.random() - 0.2) * 0.15,
+                    (Math.random() - 0.5) * 0.15
+                );
+                battleScene.add(mesh);
+                battleParticles.push({ mesh, velocity, life: 25 + Math.random() * 15 });
+            }
+        }
+
+        function launchCampaign(index) {
+            // Eerst controleren of we überhaupt soldaten hebben recruited
+            const totalUnits = gameState.army.infantry + gameState.army.archers + gameState.army.myth;
+            if (totalUnits === 0) {
+                showModal("⚔️ Geen Soldaten recruited", "Je kunt geen provincie aanvallen zonder legioenen! Rekruteer eerst soldaten in de Kazerne.", "🛡️");
+                return;
+            }
+
+            currentCampaignIndex = index;
+            const target = campaignTargets[index];
+
+            // Switch screen naar Battle via GSAP
+            gsap.to("#screen-strategic", {
+                duration: 0.4,
+                opacity: 0,
+                scale: 0.95,
+                onComplete: () => {
+                    document.getElementById('screen-strategic').classList.add('hidden');
+                    const battleScreen = document.getElementById('screen-battle');
+                    battleScreen.classList.remove('hidden');
+                    gsap.fromTo(battleScreen, 
+                        { opacity: 0, scale: 1.05 },
+                        { duration: 0.5, opacity: 1, scale: 1, ease: "power2.out" }
+                    );
+
+                    // Start 3D Slagveld
+                    initBattleThree();
+                    const fac = factions[activeFactionKey];
+                    setupBattle3D(fac.color, target.color);
+
+                    // Slagveld stats initialiseren
+                    startCombatSimulation();
+                }
+            });
+        }
+
+        function startCombatSimulation() {
+            combatActive = true;
+            const target = campaignTargets[currentCampaignIndex];
+
+            // Kracht berekening op basis van cohorts
+            playerStrength = (gameState.army.infantry * 100) + (gameState.army.archers * 120) + (gameState.army.myth * 300);
+            enemyStrength = (target.infantry * 100) + (target.archers * 120) + (target.myth * 300);
+
+            maxPlayerStrength = playerStrength;
+            maxEnemyStrength = enemyStrength;
+
+            document.getElementById('battle-enemy-name').innerText = target.name.toUpperCase();
+            document.getElementById('battle-enemy-count').innerText = `${target.infantry + target.archers + target.myth} Cohorten`;
+            document.getElementById('battle-player-army-bar').style.width = "100%";
+            document.getElementById('battle-enemy-army-bar').style.width = "100%";
+
+            document.getElementById('stat-player-units').innerText = gameState.army.infantry + gameState.army.archers + gameState.army.myth;
+            document.getElementById('stat-enemy-units').innerText = target.infantry + target.archers + target.myth;
+
+            writeBattleLog(`📣 Legioenen marcheren het veld op! Jouw macht: <strong>${playerStrength}</strong> vs ${target.name} macht: <strong>${enemyStrength}</strong>.`);
+
+            // Schrijf tactisch ratio
+            const ratio = (playerStrength / enemyStrength).toFixed(1);
+            document.getElementById('stat-combat-ratio').innerText = `${ratio} : 1`;
+
+            // Gevechts loop
+            if (battleTimer) clearInterval(battleTimer);
+            battleTimer = setInterval(combatSimulationStep, 1000);
+        }
+
+        function combatSimulationStep() {
+            if (!combatActive) return;
+
+            // Clashing schade berekenen (wederzijdse verliezen)
+            let pDmg = Math.floor((playerStrength * 0.08) + (Math.random() * 30));
+            let eDmg = Math.floor((enemyStrength * 0.08) + (Math.random() * 30));
+
+            // Boogschutters geven een defensieve schade-reductie
+            pDmg = Math.max(10, pDmg - Math.floor(gameState.army.archers * 5));
+
+            enemyStrength = Math.max(0, enemyStrength - pDmg);
+            playerStrength = Math.max(0, playerStrength - eDmg);
+
+            // Update Bars
+            const pPct = (playerStrength / maxPlayerStrength) * 100;
+            const ePct = (enemyStrength / maxEnemyStrength) * 100;
+
+            document.getElementById('battle-player-army-bar').style.width = `${pPct}%`;
+            document.getElementById('battle-enemy-army-bar').style.width = `${ePct}%`;
+
+            playSound('clash');
+            spawnBattleBlast(new THREE.Vector3(0, 0.5, 0), factions[activeFactionKey].particleColor, 8);
+
+            // Toon floats in overlay
+            showBattleFloatingDamage(new THREE.Vector3(-1.5, 0.5, 0), eDmg, '#ff3333');
+            showBattleFloatingDamage(new THREE.Vector3(1.5, 0.5, 0), pDmg, '#ffff33');
+
+            writeBattleLog(`⚔️ Legioenen botsen! Je deelt <strong>${pDmg}</strong> schade uit en incasseert <strong>${eDmg}</strong>.`);
+
+            // Check gevechtsuitslag
+            if (playerStrength <= 0) {
+                handleBattleLoss();
+            } else if (enemyStrength <= 0) {
+                handleBattleVictory();
+            }
+        }
+
+        function triggerGodPower() {
+            if (!combatActive) return;
+
+            if (gameState.resources.favor < 30) {
+                showModal("⚡ Onvoldoende Gunst", "Je hebt niet genoeg Goddelijke Gunst (Favor) om je Goddelijke Kracht te ontketenen! Bouw Tempels bij de planner.", "⚡");
+                return;
+            }
+
+            gameState.resources.favor -= 30;
+            updateResourcesUI();
+
+            const fac = factions[activeFactionKey];
+            playSound('godpower');
+
+            // 3D Visualisatie van God Power (Vallende vurige meteoor of grote lichtstraal)
+            const powerGeo = new THREE.SphereGeometry(1.0, 16, 16);
+            const powerMat = new THREE.MeshBasicMaterial({ color: fac.particleColor, wireframe: true });
+            const powerMesh = new THREE.Mesh(powerGeo, powerMat);
+            powerMesh.position.set(2, 6, 0);
+            battleScene.add(powerMesh);
+
+            gsap.to(powerMesh.position, {
+                duration: 0.5,
+                y: 0.5,
+                x: 1,
+                ease: "power2.in",
+                onComplete: () => {
+                    // Detonatie effect
+                    spawnBattleBlast(powerMesh.position, fac.particleColor, 40);
+                    battleScene.remove(powerMesh);
+
+                    // Enorme schade aan vijand
+                    const godDmg = Math.floor(maxEnemyStrength * 0.35);
+                    enemyStrength = Math.max(0, enemyStrength - godDmg);
+                    
+                    const ePct = (enemyStrength / maxEnemyStrength) * 100;
+                    document.getElementById('battle-enemy-army-bar').style.width = `${ePct}%`;
+
+                    showBattleFloatingDamage(new THREE.Vector3(1, 1, 0), godDmg, '#ffaa00');
+                    writeBattleLog(`⚡ <strong>GODDELIJKE KRACHT!</strong> Je ontketent de toorn van <strong>${fac.deity}</strong> via <strong>${fac.godPower}</strong>! Dit vaagt <strong>${godDmg}</strong> vijanden weg!`);
+
+                    if (enemyStrength <= 0) {
+                        handleBattleVictory();
+                    }
+                }
+            });
+        }
+
+        function triggerTacticalOrder(order) {
+            if (!combatActive) return;
+
+            if (order === 'retreat') {
+                writeBattleLog(`🏃 Tactische Terugtocht geblazen! Je trekt je cohorten onmiddellijk terug uit de strijd.`);
+                cleanupBattleScene();
+                returnToStrategic();
+            } else if (order === 'charge') {
+                playSound('clash');
+                spawnBattleBlast(pCohortGroup.position, 0xff0000, 20);
+                
+                // Brute charge verhoogt schade en deelt direct klap uit
+                const chargeDmg = Math.floor(playerStrength * 0.15);
+                enemyStrength = Math.max(0, enemyStrength - chargeDmg);
+                
+                const ePct = (enemyStrength / maxEnemyStrength) * 100;
+                document.getElementById('battle-enemy-army-bar').style.width = `${ePct}%`;
+                
+                showBattleFloatingDamage(new THREE.Vector3(1, 0.5, 0), chargeDmg, '#ff0033');
+                writeBattleLog(`🔥 <strong>CHARGE!</strong> Je legioenen stormen voorwaarts en breken door de vijandelijke linie met <strong>${chargeDmg}</strong> extra schade!`);
+
+                if (enemyStrength <= 0) {
+                    handleBattleVictory();
+                }
+            }
+        }
+
+        function handleBattleVictory() {
+            combatActive = false;
+            clearInterval(battleTimer);
+
+            const target = campaignTargets[currentCampaignIndex];
+            
+            // Beloningen uitkeren
+            gameState.resources.gold += target.rewardGold;
+            gameState.resources.wood += target.rewardWood;
+            gameState.resources.favor += target.rewardFavor;
+
+            // Vampieren bonus: verslagen vijanden geven extra goud
+            if (activeFactionKey === 'vampire') {
+                const bonusGold = Math.floor(target.rewardGold * 0.25);
+                gameState.resources.gold += bonusGold;
+                writeBattleLog(`🧛 Vampier bonus: Bloedoogst levert <strong>+${bonusGold}g</strong> extra op!`);
+            }
+
+            // Militair overlevingspercentage berekenen (Total War regel)
+            // Soms sterven er cohorten permanent
+            const lossPct = 1.0 - (playerStrength / maxPlayerStrength);
+            const infantryLost = Math.floor(gameState.army.infantry * lossPct * 0.4);
+            const archersLost = Math.floor(gameState.army.archers * lossPct * 0.4);
+
+            gameState.army.infantry = Math.max(0, gameState.army.infantry - infantryLost);
+            gameState.army.archers = Math.max(0, gameState.army.archers - archersLost);
+
+            // Pas bevolking aan op basis van verliezen
+            gameState.population = Math.max(0, gameState.population - (infantryLost + archersLost));
+
+            updateResourcesUI();
+            updateArmyUI();
+
+            showModal("🏆 OVERWINNING!", `Je legioenen hebben <strong>${target.name}</strong> veroverd! <br>Beloning: 🪙${target.rewardGold} Goud, 🪵${target.rewardWood} Hout.<br>Permanent verloren soldaten in gevecht: Infanterie: ${infantryLost}, Boogschutters: ${archersLost}.`, "👑");
+
+            cleanupBattleScene();
+            returnToStrategic();
+        }
+
+        function handleBattleLoss() {
+            combatActive = false;
+            clearInterval(battleTimer);
+
+            // Je hele leger is vernietigd! (Rome: Total War regel)
+            gameState.population = Math.max(0, gameState.population - (gameState.army.infantry + gameState.army.archers + gameState.army.myth));
+            gameState.army.infantry = 0;
+            gameState.army.archers = 0;
+            gameState.army.myth = 0;
+
+            updateResourcesUI();
+            updateArmyUI();
+
+            showModal("💀 CLAN NEERGESLAGEN", "Je legioenen zijn tot op de laatste man vernietigd op het slagveld... Je provincies zenden noodkreten uit. Rekruteer snel nieuwe manschappen!", "⚰️");
+
+            cleanupBattleScene();
+            returnToStrategic();
+        }
+
+        function cleanupBattleScene() {
+            combatActive = false;
+            if (battleTimer) clearInterval(battleTimer);
+
+            if (pCohortGroup) {
+                battleScene.remove(pCohortGroup);
+                pCohortGroup = null;
+            }
+            if (eCohortGroup) {
+                battleScene.remove(eCohortGroup);
+                eCohortGroup = null;
+            }
+        }
+
+        function returnToStrategic() {
+            gsap.to("#screen-battle", {
+                duration: 0.4,
+                opacity: 0,
+                scale: 0.95,
+                onComplete: () => {
+                    document.getElementById('screen-battle').classList.add('hidden');
+                    const strategicScreen = document.getElementById('screen-strategic');
+                    strategicScreen.classList.remove('hidden');
+                    gsap.fromTo(strategicScreen, 
+                        { opacity: 0, scale: 1.05 },
+                        { duration: 0.5, opacity: 1, scale: 1, ease: "power2.out" }
+                    );
+                }
+            });
+        }
+
+        function writeBattleLog(text) {
+            const logBox = document.getElementById('battle-logs');
+            const p = document.createElement('p');
+            p.className = "border-l border-red-500/30 pl-1.5 py-0.5";
+            p.innerHTML = text;
+            logBox.appendChild(p);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function showBattleFloatingDamage(threePos, value, colorStyle) {
+            const container = document.getElementById('battle-damage-overlay');
+            const element = document.createElement('div');
+            element.className = "absolute font-extrabold text-sm filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pointer-events-none transition-all";
+            element.style.color = colorStyle;
+            element.innerText = value;
+
+            // Projecteer 3D coördinaat naar 2D overlay
+            const tempV = new THREE.Vector3(threePos.x, threePos.y + 1, threePos.z);
+            tempV.project(battleCamera);
+
+            const x = (tempV.x * .5 + .5) * container.clientWidth;
+            const y = (tempV.y * -.5 + .5) * container.clientHeight;
+
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+
+            container.appendChild(element);
+
+            gsap.to(element, {
+                duration: 0.7,
+                y: -40,
+                opacity: 0,
+                scale: 1.3,
+                onComplete: () => element.remove()
+            });
+        }
+
+        // GENERAL SYSTEM MODALS
+        function showModal(title, body, icon = "👑") {
+            document.getElementById('modal-icon').innerHTML = icon;
+            document.getElementById('modal-title').innerHTML = title;
+            document.getElementById('modal-body').innerHTML = body;
+
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            gsap.to(modal, { duration: 0.25, opacity: 1 });
+        }
+
+        function closeModal() {
+            playSound('build');
+            const modal = document.getElementById('custom-modal');
+            gsap.to(modal, {
+                duration: 0.15,
+                opacity: 0,
+                onComplete: () => modal.classList.add('hidden')
+            });
+        }
+    </script>
+</body>
+</html>
+```
+eof
+
+### Wat hebben we nu gebouwd voor Derek?
+
+* **SimCity Systeem:** Je beheert je hoofdstad op een grid met huizen, boerderijen, tempels en kazernegebouwen. Je inkomsten (goud, hout, voedsel, gunst) en je maximale bevolkingscapaciteit hangen direct af van hoe strategisch je jouw stad inricht.
+* **Rome: Total War Systeem:** Je traint complete cohorten en legioenen. Je marcheert over de wereldkaart om provincies te veroveren. In de strijd clashing formaties van eenheden op het 3D-slagveld. Er treden reële gevechtsverliezen op (cohorten kunnen permanent sterven!), en je kunt tactische commando's geven (zoals een *Brute Charge* of een *Tactische Terugtocht*).
+* **Age of Mythology Systeem:** Elke faction heeft zijn eigen Godheid (zoals *Moradin* of *Sol*), een uniek mythisch wezen (zoals de *Smaragd Phoenix* of *Rots Titan*), rassenbonussen en een spectaculaire **God Power**. Je bouwt tempels om priesters te laten bidden voor *Gunst (Favor)*, waarmee je deze verwoestende krachten activeert!
+* **GSAP & Three.js:** De 3D-gevechten tonen formatie-clashes, 3D particle bursts en vliegende meteorieten dankzij Three.js, terwijl GSAP alle animaties en menu-overgangen vloeibaar maakt.
+
+Je kunt de HTML-code hierboven direct kopiëren en via een HTML-widget in Jimdo plakken. Laat me weten wat Derek en jij ervan vinden!

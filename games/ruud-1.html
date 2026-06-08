@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Saga: Arcade Pro Edition</title>
+    <!-- Tailwind CSS for rich modern UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for premium retro-futuristic arcade aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #030008;
+            background-image: radial-gradient(circle at 50% 50%, #15092b 0%, #030008 100%);
+            overflow-x: hidden;
+        }
+        .arcade-title {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .text-neon-purple {
+            color: #d8b4fe;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+        .text-neon-gold {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+        .border-neon {
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25), inset 0 0 15px rgba(168, 85, 247, 0.1);
+        }
+        .border-neon:hover, .border-neon-active {
+            border-color: rgba(168, 85, 247, 0.8);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.2);
+        }
+        .scanlines {
+            position: relative;
+            overflow: hidden;
+        }
+        .scanlines::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 20;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        /* Custom dynamic scrollbars */
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 99px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.8); }
+
+        /* Screen Shake Anim */
+        .shake-screen {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between min-h-screen select-none relative scanlines">
+
+    <!-- background grid effects -->
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(120,119,198,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(120,119,198,0.05)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0"></div>
+    <canvas id="warp-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-55"></canvas>
+
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <div id="game-container" class="z-10 flex-grow flex flex-col max-w-6xl w-full mx-auto p-4 md:p-6 justify-center">
+
+        <!-- ARCADE HEADER -->
+        <header class="flex flex-col md:flex-row items-center justify-between py-3 mb-4 border-b border-purple-900/40 relative">
+            <div class="flex items-center space-x-3">
+                <div class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-purple-950/80 border border-purple-500/40 shadow-inner">
+                    <span class="text-xl animate-pulse text-purple-400">⚡</span>
+                </div>
+                <div>
+                    <h1 class="arcade-title text-xl md:text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-amber-400">
+                        CHRONOS SAGA
+                    </h1>
+                    <span class="text-[10px] tracking-widest uppercase text-purple-400/80 font-mono">⚡ Gemini Arcade Pro Engine</span>
+                </div>
+            </div>
+
+            <!-- Header Controls & BGM toggle -->
+            <div class="flex items-center space-x-4 mt-3 md:mt-0 font-mono text-xs">
+                <button onclick="toggleMusic()" class="px-3 py-1.5 rounded-md bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 flex items-center space-x-2 transition-all">
+                    <i id="bgm-icon" class="fa-solid fa-volume-xmark text-slate-400"></i>
+                    <span id="bgm-label">BGM: OFF</span>
+                </button>
+                <div class="hidden sm:flex items-center space-x-2 bg-purple-950/20 px-3 py-1.5 rounded-md border border-purple-900/30">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="text-emerald-400">STABLE_COHESION</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: ARCADE SELECTION / CHARACTER SETUP -->
+        <div id="setup-screen" class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-950/70 border-neon rounded-2xl p-6 backdrop-blur-md shadow-2xl">
+            <!-- Left Side Selection Column -->
+            <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+                <div>
+                    <h2 class="arcade-title text-2xl font-black text-neon-purple mb-1 uppercase tracking-wide">Select your Weaver</h2>
+                    <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                        A massive chronological paradox threatens to collapse eternity. Lock in your fighter, acquire anomalies, and manipulate time to save reality.
+                    </p>
+
+                    <!-- Hero Name Entry -->
+                    <div class="mb-4">
+                        <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1.5 font-mono">Champion Identifier</label>
+                        <div class="relative">
+                            <input type="text" id="hero-name" value="Eye of One" 
+                                class="w-full bg-slate-950/90 border border-slate-800 focus:border-purple-500/80 rounded-xl px-4 py-3 text-white placeholder-slate-600 font-bold font-mono tracking-wide focus:outline-none transition-all">
+                            <span class="absolute right-4 top-3.5 text-xs text-purple-400/60 font-mono">ONLINE</span>
+                        </div>
+                    </div>
+
+                    <!-- Faction Cards Grid -->
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 font-mono">Select Legacy / Race</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Elf -->
+                            <div id="race-elf" onclick="selectRace('elf')" class="cursor-pointer bg-slate-900/40 border border-slate-800 hover:border-purple-500/50 p-3 rounded-xl transition-all flex items-center space-x-3 select-none group">
+                                <span class="text-3xl bg-purple-950/50 p-2 rounded-lg border border-purple-900/40 group-hover:scale-105 transition-transform">🍃</span>
+                                <div>
+                                    <span class="block font-bold text-sm text-slate-100 font-mono">ELF</span>
+                                    <span class="text-[10px] text-purple-400 font-mono">Mana-Weaver</span>
+                                </div>
+                            </div>
+                            <!-- Human -->
+                            <div id="race-human" onclick="selectRace('human')" class="cursor-pointer bg-slate-900/40 border border-slate-800 hover:border-purple-500/50 p-3 rounded-xl transition-all flex items-center space-x-3 select-none group">
+                                <span class="text-3xl bg-sky-950/50 p-2 rounded-lg border border-sky-900/40 group-hover:scale-105 transition-transform">🛡️</span>
+                                <div>
+                                    <span class="block font-bold text-sm text-slate-100 font-mono">HUMAN</span>
+                                    <span class="text-[10px] text-sky-400 font-mono">Paradox Shield</span>
+                                </div>
+                            </div>
+                            <!-- Orc -->
+                            <div id="race-orc" onclick="selectRace('orc')" class="cursor-pointer bg-slate-900/40 border border-slate-800 hover:border-purple-500/50 p-3 rounded-xl transition-all flex items-center space-x-3 select-none group">
+                                <span class="text-3xl bg-red-950/50 p-2 rounded-lg border border-red-900/40 group-hover:scale-105 transition-transform">🪓</span>
+                                <div>
+                                    <span class="block font-bold text-sm text-slate-100 font-mono">ORC</span>
+                                    <span class="text-[10px] text-red-400 font-mono">Rift Breaker</span>
+                                </div>
+                            </div>
+                            <!-- Dwarf -->
+                            <div id="race-dwarf" onclick="selectRace('dwarf')" class="cursor-pointer bg-slate-900/40 border border-slate-800 hover:border-purple-500/50 p-3 rounded-xl transition-all flex items-center space-x-3 select-none group">
+                                <span class="text-3xl bg-amber-950/50 p-2 rounded-lg border border-amber-900/40 group-hover:scale-105 transition-transform">⚙️</span>
+                                <div>
+                                    <span class="block font-bold text-sm text-slate-100 font-mono">DWARF</span>
+                                    <span class="text-[10px] text-amber-400 font-mono">Engine-Weaver</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startArcade()" class="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 via-indigo-600 to-amber-500 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-purple-500/30 transition-all uppercase tracking-widest text-xs font-mono">
+                    <div class="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <span class="relative z-10"><i class="fa-solid fa-gamepad mr-2"></i> Initialise Timeline Adventure</span>
+                </button>
+            </div>
+
+            <!-- Right Side Preview Screen -->
+            <div class="lg:col-span-5 bg-slate-950 border border-slate-900/80 rounded-2xl p-5 flex flex-col justify-between">
+                <!-- Preview details container -->
+                <div id="race-preview-info" class="h-full flex flex-col justify-between space-y-4">
+                    <div class="border-b border-slate-900 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span id="prev-avatar" class="text-4xl">🍃</span>
+                            <div>
+                                <h3 id="prev-title" class="arcade-title text-lg font-black text-neon-purple">Elf Weaver</h3>
+                                <span id="prev-passive" class="text-[10px] text-amber-400 font-mono">PASSIVE: ECHO FOCUS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p id="prev-desc" class="text-slate-400 text-xs italic leading-relaxed pl-3 border-l border-purple-500/60"></p>
+
+                    <!-- Stats matrix -->
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-mono mb-1">
+                                <span class="text-slate-400">BASE INTEGRITY (HP)</span>
+                                <span id="stat-prev-hp" class="text-emerald-400">100</span>
+                            </div>
+                            <div class="w-full bg-slate-900/80 rounded-full h-1.5 overflow-hidden">
+                                <div id="bar-prev-hp" class="bg-emerald-500 h-full rounded-full transition-all" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-mono mb-1">
+                                <span class="text-slate-400">CHRONO POWER (MP)</span>
+                                <span id="stat-prev-mp" class="text-cyan-400">100</span>
+                            </div>
+                            <div class="w-full bg-slate-900/80 rounded-full h-1.5 overflow-hidden">
+                                <div id="bar-prev-mp" class="bg-cyan-500 h-full rounded-full transition-all" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] font-mono bg-slate-900/40 p-2 rounded-lg">
+                            <span class="text-slate-400">SHIELD DURATION</span>
+                            <span id="stat-prev-def" class="text-amber-400 uppercase font-bold">MEDIUM</span>
+                        </div>
+                    </div>
+
+                    <!-- Unique Move Preview -->
+                    <div class="bg-purple-950/20 border border-purple-900/30 p-3 rounded-xl">
+                        <span class="block text-[9px] uppercase tracking-wider text-purple-400 font-mono font-bold mb-1">⭐ Unique Chrono Overdrive Ability</span>
+                        <div class="flex items-start space-x-2">
+                            <span class="text-sm mt-0.5">⏳</span>
+                            <div>
+                                <h4 id="prev-ability" class="text-xs font-bold text-slate-100 font-mono">Chronoshift Loop</h4>
+                                <p id="prev-ability-desc" class="text-[10px] text-slate-400 leading-tight mt-0.5">Overcharge timeline coordinates to reverse 30 points of incoming decay damage.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: MAIN ARCADE ADVENTURE GAMEPLAY -->
+        <div id="game-screen" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            <!-- Left Side Dashboard & HUD -->
+            <div class="lg:col-span-4 flex flex-col justify-between space-y-4">
+                
+                <!-- Player Core Monitor Panel -->
+                <div class="bg-slate-950 border-neon rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                        <!-- Player Summary -->
+                        <div class="flex items-center space-x-3 pb-3 border-b border-slate-900">
+                            <div id="hud-avatar" class="w-12 h-12 rounded-xl bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-3xl">🍃</div>
+                            <div>
+                                <h3 id="hud-name" class="font-bold text-slate-100 arcade-title tracking-wide">Eye of One</h3>
+                                <div class="flex items-center space-x-1.5 mt-0.5">
+                                    <span id="hud-race-badge" class="px-2 py-0.5 text-[8px] font-mono rounded bg-purple-950 text-purple-400 font-black border border-purple-900/40 uppercase">ELF</span>
+                                    <span class="text-[9px] text-slate-500 font-mono">SECURE_TIMELINE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Status Bars -->
+                        <div class="space-y-3.5 mt-4">
+                            <!-- HP -->
+                            <div>
+                                <div class="flex justify-between text-[10px] font-mono font-bold mb-1">
+                                    <span class="text-emerald-400"><i class="fa-solid fa-heart-pulse mr-1"></i> COHESION (HP)</span>
+                                    <span><span id="hud-hp">100</span> / <span id="hud-max-hp">100</span></span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800 p-[1px]">
+                                    <div id="bar-hud-hp" class="bg-gradient-to-r from-emerald-600 to-green-400 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                            <!-- MP -->
+                            <div>
+                                <div class="flex justify-between text-[10px] font-mono font-bold mb-1">
+                                    <span class="text-cyan-400"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> TIME POWER (MP)</span>
+                                    <span><span id="hud-mp">50</span> / 100</span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800 p-[1px]">
+                                    <div id="bar-hud-mp" class="bg-gradient-to-r from-cyan-600 to-blue-400 h-full rounded-full transition-all duration-300" style="width: 50%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory & Core Items inside Status Monitor -->
+                    <div class="mt-5 pt-4 border-t border-slate-900">
+                        <span class="block text-[9px] uppercase tracking-wider text-slate-400 font-mono font-bold mb-2">📦 Inventory Backpack</span>
+                        <div class="grid grid-cols-4 gap-2">
+                            <!-- Inventory Item Slote -->
+                            <div onclick="useConsumable('potion')" class="group relative cursor-pointer bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 p-2 rounded-lg flex flex-col items-center justify-center transition-all">
+                                <span class="text-lg">🧪</span>
+                                <span id="item-potion-qty" class="absolute -top-1 -right-1 bg-emerald-500 text-slate-950 font-black text-[8px] w-4 h-4 rounded-full flex items-center justify-center">1</span>
+                                <span class="text-[7px] text-slate-400 font-mono mt-0.5 group-hover:text-emerald-400">HEAL</span>
+                            </div>
+                            <div onclick="useConsumable('grenade')" class="group relative cursor-pointer bg-slate-900/60 border border-slate-800 hover:border-red-500/50 p-2 rounded-lg flex flex-col items-center justify-center transition-all">
+                                <span class="text-lg">💣</span>
+                                <span id="item-grenade-qty" class="absolute -top-1 -right-1 bg-red-500 text-slate-950 font-black text-[8px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                                <span class="text-[7px] text-slate-400 font-mono mt-0.5 group-hover:text-red-400">BOMB</span>
+                            </div>
+                            <div onclick="useConsumable('shield')" class="group relative cursor-pointer bg-slate-900/60 border border-slate-800 hover:border-sky-500/50 p-2 rounded-lg flex flex-col items-center justify-center transition-all">
+                                <span class="text-lg">🛡️</span>
+                                <span id="item-shield-qty" class="absolute -top-1 -right-1 bg-sky-500 text-slate-950 font-black text-[8px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                                <span class="text-[7px] text-slate-400 font-mono mt-0.5 group-hover:text-sky-400">WARD</span>
+                            </div>
+                            <div onclick="useConsumable('battery')" class="group relative cursor-pointer bg-slate-900/60 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-lg flex flex-col items-center justify-center transition-all">
+                                <span class="text-lg">🔋</span>
+                                <span id="item-battery-qty" class="absolute -top-1 -right-1 bg-cyan-500 text-slate-950 font-black text-[8px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                                <span class="text-[7px] text-slate-400 font-mono mt-0.5 group-hover:text-cyan-400">CELL</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Matrix -->
+                    <div class="grid grid-cols-2 gap-2 mt-4 font-mono">
+                        <div class="bg-slate-900/40 border border-slate-900 rounded-xl p-2 text-center">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold">Chrono Shards</span>
+                            <span id="hud-shards" class="text-lg font-black text-neon-gold">5</span>
+                        </div>
+                        <div class="bg-slate-900/40 border border-slate-900 rounded-xl p-2 text-center">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold">Victories</span>
+                            <span id="hud-score" class="text-lg font-black text-purple-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Location & Paradox Indicator -->
+                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <span class="text-[8px] uppercase tracking-widest text-slate-400 font-mono font-bold block mb-1">Temporal Alignment Matrix</span>
+                        <div id="hud-era-title" class="arcade-title text-base font-black text-neon-purple">Middeleeuwen</div>
+                        <p id="hud-era-desc" class="text-slate-400 text-[10px] mt-1 italic">Schilden glanzen in de rifts.</p>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-900 flex justify-between items-center text-[9px] font-mono">
+                        <span>STABILITY_COEF</span>
+                        <span id="hud-stability" class="text-emerald-400 font-bold">99%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column Sandbox (Map, Event, Battle Engine, Shop) -->
+            <div class="lg:col-span-8 flex flex-col justify-between space-y-4 h-full">
+
+                <!-- MAIN INTERACTIVE SCREEN SWAPPER -->
+                <div class="bg-slate-950 border-neon rounded-2xl overflow-hidden flex flex-col flex-grow min-h-[460px]">
+                    
+                    <!-- Viewport Tabs / Indicators -->
+                    <div class="bg-slate-950 border-b border-slate-900 px-4 py-2.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                            <span id="viewport-title" class="text-[10px] uppercase font-mono tracking-widest text-slate-300 font-bold">Chrono Node Interface</span>
+                        </div>
+                        <div id="combat-turn-badge" class="hidden px-2 py-0.5 rounded bg-purple-900/40 border border-purple-500/20 text-[9px] font-mono text-purple-300 animate-pulse uppercase">
+                            Your Turn
+                        </div>
+                    </div>
+
+                    <!-- SUB-VIEWPORT 1: NODE TIMELINE MAP -->
+                    <div id="view-map" class="flex-grow flex flex-col justify-between p-6">
+                        <div>
+                            <h3 class="arcade-title text-xl font-black text-neon-purple mb-1">Plot Your Temporal Shift</h3>
+                            <p class="text-slate-400 text-xs leading-relaxed mb-6">
+                                Navigate the fracturing pathways of reality. Choose an anomaly node to engage. Clearing a node progresses you closer to the Timeline Epoch Boss.
+                            </p>
+
+                            <!-- Node branches layout -->
+                            <div class="relative py-4">
+                                <div class="absolute inset-y-0 left-1/2 w-0.5 bg-dashed bg-purple-900/40 -translate-x-1/2"></div>
+                                <div id="map-nodes" class="grid grid-cols-4 gap-4 relative z-10">
+                                    <!-- Populated procedurally via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tip box -->
+                        <div class="bg-slate-900/30 border border-slate-900 p-3 rounded-xl flex items-center space-x-2.5 text-xs text-slate-400">
+                            <span class="text-lg">💡</span>
+                            <p>Choose wisely. Combat provides high Shards, shops allow upgrades, and mystical pools heal your matrix alignment.</p>
+                        </div>
+                    </div>
+
+                    <!-- SUB-VIEWPORT 2: ACTIVE COMBAT PANEL (WITH DYNAMIC BATTLE CANVAS) -->
+                    <div id="view-combat" class="hidden flex-grow flex flex-col justify-between p-4">
+                        <!-- The Battle Canvas Visualizer -->
+                        <div class="relative bg-slate-950 border border-slate-900 rounded-xl overflow-hidden">
+                            <canvas id="battle-canvas" class="w-full h-40 bg-slate-950 block"></canvas>
+                        </div>
+
+                        <!-- Combat Narrative Output -->
+                        <div class="bg-slate-900/30 border border-slate-900/50 p-3 rounded-xl mt-3">
+                            <h4 id="combat-enemy-name" class="font-bold text-xs uppercase tracking-wider text-red-400 font-mono mb-0.5">Vile Time-Worm</h4>
+                            <p id="combat-narration" class="text-slate-300 text-xs leading-relaxed">The temporal worm is slithering through the timeline coordinates waiting for your attack.</p>
+                        </div>
+
+                        <!-- Interactive Combat Trays -->
+                        <div class="mt-4 space-y-2">
+                            <!-- Basic actions -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="fightCommand('strike')" class="group flex flex-col items-center justify-center bg-slate-900 border border-slate-800 hover:border-red-500/50 p-2.5 rounded-lg transition-all">
+                                    <span class="text-lg group-hover:scale-110 transition-transform">⚔️</span>
+                                    <span class="text-[9px] uppercase font-mono font-bold text-slate-200 mt-0.5">Chrono-Strike</span>
+                                </button>
+                                <button onclick="fightCommand('dodge')" class="group flex flex-col items-center justify-center bg-slate-900 border border-slate-800 hover:border-sky-500/50 p-2.5 rounded-lg transition-all">
+                                    <span class="text-lg group-hover:scale-110 transition-transform">🛡️</span>
+                                    <span class="text-[9px] uppercase font-mono font-bold text-slate-200 mt-0.5">Reflect Ward</span>
+                                </button>
+                                <button onclick="fightCommand('analyze')" class="group flex flex-col items-center justify-center bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-2.5 rounded-lg transition-all">
+                                    <span class="text-lg group-hover:scale-110 transition-transform">🔍</span>
+                                    <span class="text-[9px] uppercase font-mono font-bold text-slate-200 mt-0.5">Deconstruct</span>
+                                </button>
+                            </div>
+
+                            <!-- Ultimate ability activation -->
+                            <button onclick="fightCommand('ultimate')" class="w-full bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-500/40 hover:border-purple-400/80 p-3 rounded-xl transition-all flex items-center justify-between group overflow-hidden relative">
+                                <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-lg group-hover:rotate-12 transition-transform">⏳</span>
+                                    <div class="text-left font-mono">
+                                        <span id="combat-ultimate-name" class="block text-xs font-black text-neon-purple uppercase tracking-wider">CHRONOSHIFT LOOP</span>
+                                        <span id="combat-ultimate-desc" class="block text-[8px] text-slate-400 mt-0.5">Reverse decay state damage (-15 MP required)</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-mono font-bold text-purple-400">ACTIV_OVERDRIVE</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SUB-VIEWPORT 3: THE TEMPORAL SHOP / BAZAAR -->
+                    <div id="view-shop" class="hidden flex-grow flex flex-col justify-between p-6">
+                        <div>
+                            <h3 class="arcade-title text-xl font-black text-neon-gold mb-1">Temporal Merchant Node</h3>
+                            <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                                Exchange your glowing Chrono-Shards for physical items to aid you in combat. Select an item to secure transmission.
+                            </p>
+
+                            <!-- Store list layout -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                <!-- Potion item -->
+                                <div class="bg-slate-900/40 border border-slate-900 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <span class="text-2xl">🧪</span>
+                                        <div>
+                                            <h4 class="font-bold text-xs text-slate-200">Chronological Potion</h4>
+                                            <p class="text-[9px] text-slate-400">Heals 30 integrity instantly.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyItem('potion', 3)" class="bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/30 text-amber-300 font-mono font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                                        🪙 3 Shards
+                                    </button>
+                                </div>
+                                <!-- Grenade item -->
+                                <div class="bg-slate-900/40 border border-slate-900 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <span class="text-2xl">💣</span>
+                                        <div>
+                                            <h4 class="font-bold text-xs text-slate-200">Gravity Singularity Bomb</h4>
+                                            <p class="text-[9px] text-slate-400">Instantly deals 35 damage.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyItem('grenade', 4)" class="bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/30 text-amber-300 font-mono font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                                        🪙 4 Shards
+                                    </button>
+                                </div>
+                                <!-- Shield item -->
+                                <div class="bg-slate-900/40 border border-slate-900 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <span class="text-2xl">🛡️</span>
+                                        <div>
+                                            <h4 class="font-bold text-xs text-slate-200">Refractive Kinetic Ward</h4>
+                                            <p class="text-[9px] text-slate-400">Mitigates next incoming attack.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyItem('shield', 3)" class="bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/30 text-amber-300 font-mono font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                                        🪙 3 Shards
+                                    </button>
+                                </div>
+                                <!-- Battery item -->
+                                <div class="bg-slate-900/40 border border-slate-900 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <span class="text-2xl">🔋</span>
+                                        <div>
+                                            <h4 class="font-bold text-xs text-slate-200">Chronos Power Cell</h4>
+                                            <p class="text-[9px] text-slate-400">Instantly restores 25 energy.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyItem('battery', 2)" class="bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/30 text-amber-300 font-mono font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                                        🪙 2 Shards
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="leaveActiveNode()" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 py-3 rounded-xl text-xs uppercase font-mono font-bold tracking-widest transition-all">
+                            <i class="fa-solid fa-arrow-left-long mr-1.5"></i> Depart Node Map
+                        </button>
+                    </div>
+
+                    <!-- SUB-VIEWPORT 4: MYSTICAL RIFT EVENT -->
+                    <div id="view-event" class="hidden flex-grow flex flex-col justify-between p-6">
+                        <div>
+                            <h3 id="event-title" class="arcade-title text-xl font-black text-neon-purple mb-1">Rift Encounter</h3>
+                            <p id="event-text" class="text-slate-300 text-xs leading-relaxed mb-6">
+                                A shimmering timeline fissure has appeared. How will your champion respond?
+                            </p>
+
+                            <!-- Event specific dynamic actions tray -->
+                            <div id="event-buttons" class="space-y-3">
+                                <!-- Populated procedurally via JS -->
+                            </div>
+                        </div>
+
+                        <button onclick="leaveActiveNode()" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 py-3 rounded-xl text-xs uppercase font-mono font-bold tracking-widest transition-all">
+                            <i class="fa-solid fa-arrow-left-long mr-1.5"></i> Depart Node Map
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Live Command Line Logs console -->
+                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-4 h-36 flex flex-col">
+                    <span class="text-[8px] uppercase font-mono tracking-widest text-slate-500 mb-2 block border-b border-slate-900 pb-1">⚡ Dynamic System Out / Real-time Terminal Log</span>
+                    <div id="chronicle-log" class="custom-scroll overflow-y-auto flex-grow text-[10px] space-y-2 pr-2 font-mono text-slate-400">
+                        <div class="text-purple-400 font-bold">[ONLINE] Temporal matrix initialized. Waiting choice...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SCREEN 3: GAME OVER / CHRONO FAILURE -->
+        <div id="game-over-screen" class="hidden text-center max-w-xl mx-auto bg-slate-950 border-neon rounded-2xl p-8 backdrop-blur-md shadow-2xl relative">
+            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-600 to-amber-600"></div>
+            <div class="text-6xl mb-4 animate-pulse">💀</div>
+            <h2 class="arcade-title text-3xl font-black text-red-500 mb-2">TIMELINE COLLAPSED</h2>
+            <p class="text-slate-400 text-xs leading-relaxed mb-6">
+                Your molecular matrix could not withstand the timeline anomalies. Your champion was completely deleted from all records of history.
+            </p>
+            
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl max-w-sm mx-auto mb-8 grid grid-cols-2 gap-4">
+                <div>
+                    <span class="block text-[9px] text-slate-400 font-mono font-bold uppercase">Victories</span>
+                    <span id="final-score" class="text-2xl font-black text-purple-400">0</span>
+                </div>
+                <div>
+                    <span class="block text-[9px] text-slate-400 font-mono font-bold uppercase">Secure Shards</span>
+                    <span id="final-shards" class="text-2xl font-black text-neon-gold">0</span>
+                </div>
+            </div>
+
+            <button onclick="restartArcade()" class="w-full relative group overflow-hidden bg-gradient-to-r from-red-600 via-pink-600 to-amber-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all uppercase tracking-widest text-xs font-mono">
+                <span class="relative z-10">🔄 Reboot Chronos Engine Core</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ARCADE FOOTER -->
+    <footer class="text-center py-5 text-[8px] text-slate-600 font-mono tracking-widest">
+        CHRONOS ENGINE: PRO EDITION v2.6.0 • LICENSED TO ARCADE CORES
+    </footer>
+
+    <script>
+        // Game Music and Sound State
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let bgmInterval = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'shift') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                } else if (type === 'damage') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } else if (type === 'heal' || type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1500, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'gameover') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(10, audioCtx.currentTime + 0.8);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.8);
+                }
+            } catch (e) {
+                console.warn("Audio Context failure: ", e);
+            }
+        }
+
+        function toggleMusic() {
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (isMusicPlaying) {
+                clearInterval(bgmInterval);
+                isMusicPlaying = false;
+                document.getElementById('bgm-icon').className = 'fa-solid fa-volume-xmark text-slate-400';
+                document.getElementById('bgm-label').innerText = 'BGM: OFF';
+            } else {
+                isMusicPlaying = true;
+                document.getElementById('bgm-icon').className = 'fa-solid fa-volume-high text-purple-400 animate-pulse';
+                document.getElementById('bgm-label').innerText = 'BGM: ON';
+                // Start procedural synthesizer loop
+                playBgmBeat();
+            }
+        }
+
+        // Procedural loop to generate cosmic background melodies
+        function playBgmBeat() {
+            let noteIndex = 0;
+            const notes = [110, 130, 146, 165, 196, 220]; // Pentatonic space bass scale
+
+            bgmInterval = setInterval(() => {
+                if (!isMusicPlaying || !audioCtx) return;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.type = 'sine';
+                    const pitch = notes[noteIndex % notes.length];
+                    osc.frequency.setValueAtTime(pitch, audioCtx.currentTime);
+                    
+                    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    noteIndex++;
+                } catch(e) {}
+            }, 600);
+        }
+
+        // Advanced Game State Object
+        let player = {
+            name: "Eye of One",
+            race: "elf",
+            hp: 100,
+            maxHp: 100,
+            mp: 50,
+            shards: 5,
+            score: 0,
+            inventory: {
+                potion: 1,
+                grenade: 0,
+                shield: 0,
+                battery: 0
+            },
+            shieldDuration: 0,
+            eraIdx: 0
+        };
+
+        const races = {
+            elf: {
+                title: "Elf Chrono-Weaver",
+                avatar: "🍃",
+                passive: "PASSIVE: CHRONO-CORE ECHO FOCUS (+40 Start Mana)",
+                lore: "An ancient faction of cosmic weave-crafting Elves. They manipulate timelines with raw spatial magic, treating time coordinates like tapestry threads.",
+                hp: 90,
+                mp: 90,
+                defense: "Medium",
+                abilityName: "Spacial Phase Echo (-15 MP)",
+                abilityDesc: "Heals 30 HP by phase-shifting body elements into temporal echoes."
+            },
+            human: {
+                title: "Human Paradox Vanguard",
+                avatar: "🛡️",
+                passive: "PASSIVE: INTEGRAL DEFENSE (+20 Max Integrity)",
+                lore: "Versatile pioneers holding stable coordinates within spacetime. Their unique willpower stabilizes reality alignment loops effortlessly.",
+                hp: 120,
+                mp: 60,
+                defense: "High",
+                abilityName: "Temporal Anchorage (-15 MP)",
+                abilityDesc: "Restores 25 integrity and establishes an immediate barrier against anomalies."
+            },
+            orc: {
+                title: "Orc Rift Executioner",
+                avatar: "🪓",
+                passive: "PASSIVE: RIFT FORCE (+50 base HP)",
+                lore: "Shattered across multi-dimensions, Orc armies slice directly through chronological barriers with raw molecular force to harvest anomalies.",
+                hp: 150,
+                mp: 40,
+                defense: "Heavy",
+                abilityName: "Anachronistic Fury (-15 MP)",
+                abilityDesc: "Rips through coordinate code, dealing massive instant damage to the target."
+            },
+            dwarf: {
+                title: "Dwarf Engine-Weaver",
+                avatar: "⚙️",
+                passive: "PASSIVE: ENGINE OPTIMIZER (+2 Start Tech Shards)",
+                lore: "Underground tinkers creating clockwork generators capable of altering spatial anchors to synthesize rare chronometer elements.",
+                hp: 110,
+                mp: 50,
+                defense: "Extremely Heavy",
+                abilityName: "Matrix Mechanics (-15 MP)",
+                abilityDesc: "Deploys rapid molecular nanites to repair 25 integrity instantly."
+            }
+        };
+
+        const eras = [
+            { name: "Medieval Chronicles", desc: "Rifts slicing knights, armor, and old spells.", theme: "#6366f1" },
+            { name: "Primal Genesis Era", desc: "Anachronistic dinosaurs roaming glowing energy pools.", theme: "#10b981" },
+            { name: "Steam-Industrial Sector", desc: "Smokestacks, brass engines, and mechanical clockworks.", theme: "#f59e0b" },
+            { name: "Matrix Cyberpunk Future", desc: "Neon grids processing raw chronological data streams.", theme: "#ec4899" }
+        ];
+
+        const nodesData = [
+            { type: "combat", icon: "fa-swords", title: "Rift Anomaly Combat" },
+            { type: "event", icon: "fa-wand-magic-sparkles", title: "Mystical Time Fissure" },
+            { type: "shop", icon: "fa-store", title: "Bazaar Merchant" },
+            { type: "combat", icon: "fa-shield-halved", title: "Elite Defender Battle" }
+        ];
+
+        const combatPool = [
+            { name: "Temporal Rift Hound", hp: 60, maxHp: 60, attack: 14, color: "#ec4899", emoji: "🐺" },
+            { name: "Dimensional Glitch Sentry", hp: 80, maxHp: 80, attack: 18, color: "#f59e0b", emoji: "🤖" },
+            { name: "Epoch Singularity Warden", hp: 110, maxHp: 110, attack: 24, color: "#a855f7", emoji: "👾" }
+        ];
+
+        let activeEnemy = null;
+        let activeCombatAction = false;
+
+        function selectRace(raceKey) {
+            playSound('click');
+            // Reset active style classes across grids
+            ['elf', 'human', 'orc', 'dwarf'].forEach(r => {
+                document.getElementById(`race-${r}`).classList.remove('border-purple-500/80', 'bg-purple-950/20');
+            });
+            
+            // Apply focus to chosen element
+            document.getElementById(`race-${raceKey}`).classList.add('border-purple-500/80', 'bg-purple-950/20');
+            player.race = raceKey;
+
+            // Update setup preview column
+            const data = races[raceKey];
+            document.getElementById('prev-avatar').innerText = data.avatar;
+            document.getElementById('prev-title').innerText = data.title;
+            document.getElementById('prev-passive').innerText = data.passive;
+            document.getElementById('prev-desc').innerText = `"${data.lore}"`;
+            document.getElementById('prev-ability').innerText = data.abilityName;
+            document.getElementById('prev-ability-desc').innerText = data.abilityDesc;
+
+            document.getElementById('stat-prev-hp').innerText = data.hp;
+            document.getElementById('stat-prev-mp').innerText = data.mp;
+            document.getElementById('stat-prev-def').innerText = data.defense;
+
+            // Bar update percentages
+            document.getElementById('bar-prev-hp').style.width = `${(data.hp / 150) * 100}%`;
+            document.getElementById('bar-prev-mp').style.width = `${(data.mp / 100) * 100}%`;
+        }
+
+        // Initialize default selection on page load
+        selectRace('elf');
+
+        function startArcade() {
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playSound('shift');
+
+            const nameInput = document.getElementById('hero-name').value.trim();
+            player.name = nameInput || "Eye of One";
+
+            // Map variables based on race choice
+            const config = races[player.race];
+            player.maxHp = config.hp;
+            player.hp = config.hp;
+            player.mp = config.mp;
+            player.shards = player.race === 'dwarf' ? 7 : 5;
+            player.score = 0;
+            player.eraIdx = 0;
+
+            // Reset inventories
+            player.inventory = { potion: 1, grenade: 0, shield: 0, battery: 0 };
+            player.shieldDuration = 0;
+
+            // Draw HUD panel values
+            document.getElementById('hud-avatar').innerText = config.avatar;
+            document.getElementById('hud-name').innerText = player.name;
+            document.getElementById('hud-race-badge').innerText = player.race;
+            document.getElementById('combat-ultimate-name').innerText = config.abilityName;
+            document.getElementById('combat-ultimate-desc').innerText = config.abilityDesc;
+
+            // Synchronize system layout tabs
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            addLog(`<span class="text-purple-400 font-bold">[ENGINE DEPLOYED] Champion ${player.name} integrated successfully.</span>`);
+            syncStats();
+            generateNodes();
+        }
+
+        function syncStats() {
+            document.getElementById('hud-hp').innerText = player.hp;
+            document.getElementById('hud-max-hp').innerText = player.maxHp;
+            document.getElementById('hud-mp').innerText = player.mp;
+            document.getElementById('hud-shards').innerText = player.shards;
+            document.getElementById('hud-score').innerText = player.score;
+
+            // Inventory quantity displays
+            document.getElementById('item-potion-qty').innerText = player.inventory.potion;
+            document.getElementById('item-grenade-qty').innerText = player.inventory.grenade;
+            document.getElementById('item-shield-qty').innerText = player.inventory.shield;
+            document.getElementById('item-battery-qty').innerText = player.inventory.battery;
+
+            // Bar visual percentages
+            const hpPercent = (player.hp / player.maxHp) * 100;
+            document.getElementById('bar-hud-hp').style.width = `${hpPercent}%`;
+            document.getElementById('bar-hud-mp').style.width = `${player.mp}%`;
+
+            // Calculate stability coefficient directly from current metrics
+            const stabilityVal = Math.max(10, Math.min(100, Math.round(100 - (player.score * 3) - (100 - hpPercent) * 0.4)));
+            const stabilityIndicator = document.getElementById('hud-stability');
+            stabilityIndicator.innerText = `${stabilityVal}%`;
+
+            if (stabilityVal < 40) {
+                stabilityIndicator.className = "text-red-500 font-bold animate-pulse";
+            } else if (stabilityVal < 70) {
+                stabilityIndicator.className = "text-amber-500 font-bold";
+            } else {
+                stabilityIndicator.className = "text-emerald-400 font-bold";
+            }
+
+            // Sync current location index
+            const era = eras[player.eraIdx];
+            document.getElementById('hud-era-title').innerText = era.name;
+            document.getElementById('hud-era-desc').innerText = era.desc;
+
+            if (player.hp <= 0) {
+                triggerArcadeGameOver();
+            }
+        }
+
+        function addLog(text) {
+            const consoleLog = document.getElementById('chronicle-log');
+            consoleLog.innerHTML += `<div class="pt-1.5 border-t border-slate-900/30 font-mono">${text}</div>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function generateNodes() {
+            const mapContainer = document.getElementById('map-nodes');
+            mapContainer.innerHTML = "";
+
+            // Change era occasionally on node regeneration
+            if (player.score > 0 && player.score % 2 === 0) {
+                player.eraIdx = (player.eraIdx + 1) % eras.length;
+                playSound('shift');
+                addLog(`<span class="text-indigo-400">[WARP] Spatial anomaly detected! Timestream shifted to the ${eras[player.eraIdx].name}.</span>`);
+            }
+
+            nodesData.forEach((node, idx) => {
+                const nodeButton = document.createElement('div');
+                nodeButton.className = "cursor-pointer group flex flex-col items-center bg-slate-900/40 border border-slate-800/80 hover:border-purple-500/50 p-4 rounded-xl text-center transition-all shadow-inner relative";
+                nodeButton.onclick = () => selectNode(idx, node.type);
+                
+                nodeButton.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800 group-hover:scale-110 group-hover:border-purple-500/50 transition-all text-xl">
+                        <i class="fa-solid ${node.icon} text-purple-400 group-hover:text-amber-400 transition-colors"></i>
+                    </div>
+                    <span class="block text-[9px] uppercase font-mono tracking-widest text-slate-300 font-bold mt-2.5">${node.title}</span>
+                `;
+                mapContainer.appendChild(nodeButton);
+            });
+
+            document.getElementById('view-map').classList.remove('hidden');
+            document.getElementById('view-combat').classList.add('hidden');
+            document.getElementById('view-shop').classList.add('hidden');
+            document.getElementById('view-event').classList.add('hidden');
+            document.getElementById('viewport-title').innerText = "CHRONO NODE INTERFACE";
+            document.getElementById('combat-turn-badge').classList.add('hidden');
+            syncStats();
+        }
+
+        function selectNode(index, type) {
+            playSound('click');
+            
+            if (type === 'combat') {
+                // Initialize active battle viewport
+                document.getElementById('view-map').classList.add('hidden');
+                document.getElementById('view-combat').classList.remove('hidden');
+                document.getElementById('viewport-title').innerText = "TACTICAL BATTLE INTERFACE";
+                document.getElementById('combat-turn-badge').classList.remove('hidden');
+
+                // Generate Enemy
+                const baseEnemy = combatPool[Math.floor(Math.random() * combatPool.length)];
+                activeEnemy = { ...baseEnemy, x: 420, y: 110 };
+                playerCombatX = 80;
+                playerCombatY = 110;
+
+                addLog(`<span class="text-red-400">[ENGAGED] Locked eyes with a hostile ${activeEnemy.name}! Initiate strike.</span>`);
+                document.getElementById('combat-enemy-name').innerText = activeEnemy.name;
+                document.getElementById('combat-narration').innerText = `A hostile ${activeEnemy.name} stands before you with ${activeEnemy.hp} HP. Prepare your commands.`;
+                
+                startCombatLoop();
+            } else if (type === 'shop') {
+                document.getElementById('view-map').classList.add('hidden');
+                document.getElementById('view-shop').classList.remove('hidden');
+                document.getElementById('viewport-title').innerText = "TEMPORAL BAZAAR";
+                addLog(`<span class="text-neon-gold">[MERCHANT] Entered Temporal Bazaar. Prepare to trade shards.</span>`);
+            } else if (type === 'event') {
+                document.getElementById('view-map').classList.add('hidden');
+                document.getElementById('view-event').classList.remove('hidden');
+                document.getElementById('viewport-title').innerText = "MYSTICAL FISSURE COGNITION";
+                triggerEventNode();
+            }
+        }
+
+        let battleCanvas, battleCtx;
+        let playerCombatX = 80;
+        let playerCombatY = 110;
+        let playerSlashAnim = 0;
+        let enemySlashAnim = 0;
+        let battleParticles = [];
+        let floatingDamage = [];
+
+        function startCombatLoop() {
+            battleCanvas = document.getElementById('battle-canvas');
+            battleCtx = battleCanvas.getContext('2d');
+            
+            // Set scale size
+            battleCanvas.width = battleCanvas.parentElement.clientWidth;
+            battleCanvas.height = 160;
+
+            requestAnimationFrame(drawCombatFrame);
+        }
+
+        function drawCombatFrame() {
+            if (!activeEnemy || document.getElementById('view-combat').classList.contains('hidden')) return;
+
+            battleCtx.clearRect(0, 0, battleCanvas.width, battleCanvas.height);
+
+            // Draw grid matrix backdrop
+            battleCtx.strokeStyle = "rgba(168, 85, 247, 0.08)";
+            battleCtx.lineWidth = 1;
+            for (let i = 0; i < battleCanvas.width; i += 20) {
+                battleCtx.beginPath();
+                battleCtx.moveTo(i, 0);
+                battleCtx.lineTo(i, battleCanvas.height);
+                battleCtx.stroke();
+            }
+
+            // Draw Player
+            battleCtx.font = "40px sans-serif";
+            battleCtx.textAlign = "center";
+            battleCtx.fillText(races[player.race].avatar, playerCombatX, playerCombatY);
+            
+            // Player base health indicator above emoji
+            battleCtx.fillStyle = "rgba(16, 185, 129, 0.2)";
+            battleCtx.fillRect(playerCombatX - 25, playerCombatY - 55, 50, 6);
+            battleCtx.fillStyle = "#10b981";
+            battleCtx.fillRect(playerCombatX - 25, playerCombatY - 55, (player.hp / player.maxHp) * 50, 6);
+
+            // Draw Enemy
+            battleCtx.fillText(activeEnemy.emoji, activeEnemy.x, activeEnemy.y);
+            
+            // Enemy health bar
+            battleCtx.fillStyle = "rgba(239, 68, 68, 0.2)";
+            battleCtx.fillRect(activeEnemy.x - 25, activeEnemy.y - 55, 50, 6);
+            battleCtx.fillStyle = "#ef4444";
+            battleCtx.fillRect(activeEnemy.x - 25, activeEnemy.y - 55, (activeEnemy.hp / activeEnemy.maxHp) * 50, 6);
+
+            // Player Shield Ring representation
+            if (player.shieldDuration > 0) {
+                battleCtx.strokeStyle = "#38bdf8";
+                battleCtx.lineWidth = 3;
+                battleCtx.beginPath();
+                battleCtx.arc(playerCombatX, playerCombatY - 12, 28, 0, Math.PI * 2);
+                battleCtx.stroke();
+            }
+
+            // Render slashes & special attack effects
+            if (playerSlashAnim > 0) {
+                battleCtx.strokeStyle = "rgba(251, 191, 36, 0.8)";
+                battleCtx.lineWidth = 4;
+                battleCtx.beginPath();
+                battleCtx.moveTo(activeEnemy.x - 30, activeEnemy.y - 40);
+                battleCtx.lineTo(activeEnemy.x + 30, activeEnemy.y + 20);
+                battleCtx.stroke();
+                playerSlashAnim--;
+            }
+            if (enemySlashAnim > 0) {
+                battleCtx.strokeStyle = "rgba(239, 68, 68, 0.8)";
+                battleCtx.lineWidth = 4;
+                battleCtx.beginPath();
+                battleCtx.moveTo(playerCombatX - 30, playerCombatY - 40);
+                battleCtx.lineTo(playerCombatX + 30, playerCombatY + 20);
+                battleCtx.stroke();
+                enemySlashAnim--;
+            }
+
+            // Process battle laser particles
+            battleParticles.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                battleCtx.fillStyle = p.color;
+                battleCtx.beginPath();
+                battleCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                battleCtx.fill();
+
+                if (Math.abs(p.x - p.tx) < 8) {
+                    battleParticles.splice(idx, 1);
+                }
+            });
+
+            // Process Floating Combat Damage Text
+            floatingDamage.forEach((f, idx) => {
+                f.y -= 0.8;
+                f.life--;
+                battleCtx.font = "bold 14px 'Orbitron', monospace";
+                battleCtx.fillStyle = f.color;
+                battleCtx.fillText(f.text, f.x, f.y);
+
+                if (f.life <= 0) {
+                    floatingDamage.splice(idx, 1);
+                }
+            });
+
+            requestAnimationFrame(drawCombatFrame);
+        }
+
+        // Trigger shake visual matrix
+        function triggerScreenShake() {
+            const viewport = document.getElementById('game-container');
+            viewport.classList.add('shake-screen');
+            setTimeout(() => {
+                viewport.classList.remove('shake-screen');
+            }, 300);
+        }
+
+        function fightCommand(action) {
+            if (activeCombatAction || !activeEnemy) return;
+            activeCombatAction = true;
+
+            let damage = 0;
+            if (action === 'strike') {
+                damage = Math.floor(Math.random() * 12) + 12; // Base damage
+                activeEnemy.hp -= damage;
+                playerSlashAnim = 12;
+                playSound('success');
+
+                // Launch energy project particles
+                for (let i = 0; i < 5; i++) {
+                    battleParticles.push({
+                        x: playerCombatX + 10, y: playerCombatY - 12,
+                        vx: 6, vy: (Math.random() * 4 - 2),
+                        tx: activeEnemy.x, size: Math.random()*3+2, color: "#fbbf24"
+                    });
+                }
+
+                floatingDamage.push({ x: activeEnemy.x, y: activeEnemy.y - 45, text: `-${damage}`, color: "#fbbf24", life: 40 });
+                document.getElementById('combat-narration').innerText = `You slash through dimensions! Dealing ${damage} damage to the ${activeEnemy.name}.`;
+            } 
+            else if (action === 'dodge') {
+                player.shieldDuration = 1;
+                playSound('heal');
+                document.getElementById('combat-narration').innerText = `You channel a defensive Temporal Aegis field, securing safety against the enemy's next retaliating hit.`;
+            } 
+            else if (action === 'analyze') {
+                // Weakens enemy, restores MP
+                const mpGain = 20;
+                player.mp = Math.min(100, player.mp + mpGain);
+                activeEnemy.hp -= 5;
+                playSound('success');
+                document.getElementById('combat-narration').innerText = `You deconstruct anomaly coordinate vulnerabilities! Generating +${mpGain} MP and inflicting slight damage.`;
+                floatingDamage.push({ x: activeEnemy.x, y: activeEnemy.y - 45, text: `-5 HP`, color: "#a855f7", life: 40 });
+            } 
+            else if (action === 'ultimate') {
+                if (player.mp < 15) {
+                    playSound('damage');
+                    document.getElementById('combat-narration').innerText = `Failed to initiate override! Not enough Chrono Power (MP) inside core generator.`;
+                    activeCombatAction = false;
+                    return;
+                }
+
+                player.mp -= 15;
+                playSound('heal');
+
+                if (player.race === 'elf') {
+                    player.hp = Math.min(player.maxHp, player.hp + 30);
+                    document.getElementById('combat-narration').innerText = `Temporal Echo Loop active! Reverting past molecular decay states (+30 HP restored).`;
+                } else if (player.race === 'human') {
+                    player.hp = Math.min(player.maxHp, player.hp + 25);
+                    player.shieldDuration = 2;
+                    document.getElementById('combat-narration').innerText = `Vanguard Anchor engaged! Regenerating +25 HP and deploying high density barrier matrix.`;
+                } else if (player.race === 'orc') {
+                    const orcRage = 35;
+                    activeEnemy.hp -= orcRage;
+                    playerSlashAnim = 20;
+                    floatingDamage.push({ x: activeEnemy.x, y: activeEnemy.y - 45, text: `-${orcRage} HP`, color: "#ef4444", life: 50 });
+                    document.getElementById('combat-narration').innerText = `Molecular Rift Shred activated! Dealing huge ${orcRage} destruction damage across space.`;
+                } else if (player.race === 'dwarf') {
+                    player.hp = Math.min(player.maxHp, player.hp + 25);
+                    player.shards += 2;
+                    document.getElementById('combat-narration').innerText = `Mechanic bypass online! Restoring 25 integrity and restructuring nearby space chunks (+2 Shards).`;
+                }
+            }
+
+            syncStats();
+
+            // Check if enemy dead
+            if (activeEnemy.hp <= 0) {
+                setTimeout(() => {
+                    victoryEncounter();
+                }, 1000);
+                return;
+            }
+
+            // Enemy Turn retaliation delay
+            setTimeout(() => {
+                enemyRetaliate();
+            }, 1200);
+        }
+
+        function enemyRetaliate() {
+            if (!activeEnemy || activeEnemy.hp <= 0) return;
+
+            document.getElementById('combat-turn-badge').innerText = "Enemy Turn";
+            document.getElementById('combat-turn-badge').className = "px-2 py-0.5 rounded bg-red-900/40 border border-red-500/20 text-[9px] font-mono text-red-300 animate-pulse uppercase";
+
+            let incomingDmg = Math.floor(Math.random() * 10) + activeEnemy.attack - 4;
+            
+            // Check shield durability
+            if (player.shieldDuration > 0) {
+                incomingDmg = 0;
+                player.shieldDuration--;
+                playSound('heal');
+                document.getElementById('combat-narration').innerText = `The hostile ${activeEnemy.name} lunges forward, but your refractive Kinetic Ward completely deflects the energy blast!`;
+            } else {
+                playSound('damage');
+                triggerScreenShake();
+                enemySlashAnim = 12;
+                player.hp = Math.max(0, player.hp - incomingDmg);
+                document.getElementById('combat-narration').innerText = `The ${activeEnemy.name} unleashes a devastating timestrike! You absorb ${incomingDmg} damage.`;
+                floatingDamage.push({ x: playerCombatX, y: playerCombatY - 45, text: `-${incomingDmg}`, color: "#ef4444", life: 40 });
+            }
+
+            // Projectile particles firing backward
+            for (let i = 0; i < 4; i++) {
+                battleParticles.push({
+                    x: activeEnemy.x - 10, y: activeEnemy.y - 12,
+                    vx: -6, vy: (Math.random() * 4 - 2),
+                    tx: playerCombatX, size: Math.random()*3+2, color: "#ef4444"
+                });
+            }
+
+            syncStats();
+
+            setTimeout(() => {
+                document.getElementById('combat-turn-badge').innerText = "Your Turn";
+                document.getElementById('combat-turn-badge').className = "px-2 py-0.5 rounded bg-purple-900/40 border border-purple-500/20 text-[9px] font-mono text-purple-300 animate-pulse uppercase";
+                activeCombatAction = false;
+            }, 1100);
+        }
+
+        function victoryEncounter() {
+            playSound('success');
+            const rewardShards = Math.floor(Math.random() * 3) + 2;
+            player.shards += rewardShards;
+            player.score++;
+
+            addLog(`<span class="text-emerald-400">[VICTORY] Eradicated ${activeEnemy.name}! Found +${rewardShards} Chrono Shards.</span>`);
+            
+            activeEnemy = null;
+            activeCombatAction = false;
+
+            generateNodes();
+        }
+
+        function useConsumable(itemType) {
+            if (player.inventory[itemType] <= 0) {
+                playSound('damage');
+                addLog(`<span class="text-amber-500">⚠️ Failed transmission! Zero quantities of ${itemType} left inside storage.</span>`);
+                return;
+            }
+
+            playSound('heal');
+            player.inventory[itemType]--;
+
+            if (itemType === 'potion') {
+                player.hp = Math.min(player.maxHp, player.hp + 30);
+                addLog(`<span class="text-emerald-400">✨ [ITEM] Drank Chrono-Potion. Restored 30 Integrity coordinates.</span>`);
+                if (activeEnemy) {
+                    floatingDamage.push({ x: playerCombatX, y: playerCombatY - 45, text: `+30 HP`, color: "#10b981", life: 40 });
+                }
+            } else if (itemType === 'grenade') {
+                addLog(`<span class="text-red-400">💥 [ITEM] Detonated Gravity Singularity Grenade.</span>`);
+                if (activeEnemy) {
+                    activeEnemy.hp -= 35;
+                    floatingDamage.push({ x: activeEnemy.x, y: activeEnemy.y - 45, text: `-35 HP`, color: "#f59e0b", life: 40 });
+                    if (activeEnemy.hp <= 0) {
+                        setTimeout(() => { victoryEncounter(); }, 800);
+                        return;
+                    }
+                }
+            } else if (itemType === 'shield') {
+                player.shieldDuration += 2;
+                addLog(`<span class="text-sky-400">🛡️ [ITEM] Activated Refractive Kinetic Ward. Added 2 defensive block cycles.</span>`);
+            } else if (itemType === 'battery') {
+                player.mp = Math.min(100, player.mp + 25);
+                addLog(`<span class="text-cyan-400">🔋 [ITEM] Inserted high-capacity energy cell. +25 MP acquired.</span>`);
+            }
+
+            syncStats();
+        }
+
+        const mysticalEvents = [
+            {
+                title: "Temporal Convergence Fountain",
+                text: "You stumble upon an ancient fountain bubbling with sparkling timeline fluid. It radiates massive temporal energy.",
+                choices: [
+                    { text: "Drink Deeply", log: "You drink. Your timeline stability repairs, restoring all HP.", effect: () => { player.hp = player.maxHp; } },
+                    { text: "Infuse Core Charger", log: "You immerse your generator, supercharging maximum capacity. Gain 40 MP.", effect: () => { player.mp = Math.min(100, player.mp + 40); } }
+                ]
+            },
+            {
+                title: "Decaying Spacetime Merchant",
+                text: "A floating construct from a dead cyberpunk future offers to stabilize parts of your grid in exchange for physical energy.",
+                choices: [
+                    { text: "Sacrifice Shards for Gear", log: "You buy a Singularity Grenade and Chrono-Potion.", effect: () => { player.inventory.grenade++; player.inventory.potion++; } },
+                    { text: "Ignore & Re-Anchor", log: "You decide not to risk paradox corruption and slowly back away.", effect: () => {} }
+                ]
+            }
+        ];
+
+        function triggerEventNode() {
+            const ev = mysticalEvents[Math.floor(Math.random() * mysticalEvents.length)];
+            document.getElementById('event-title').innerText = ev.title;
+            document.getElementById('event-text').innerText = ev.text;
+
+            const btnContainer = document.getElementById('event-buttons');
+            btnContainer.innerHTML = "";
+
+            ev.choices.forEach(ch => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-purple-950/20 border border-slate-800 hover:border-purple-500/50 p-3 rounded-xl transition-all text-xs font-mono flex justify-between items-center";
+                btn.onclick = () => {
+                    playSound('heal');
+                    ch.effect();
+                    addLog(`<span class="text-purple-400">[FISSURE] ${ch.log}</span>`);
+                    generateNodes();
+                };
+                btn.innerHTML = `<span>${ch.text}</span> <span class="text-[10px] text-purple-400 font-bold uppercase font-mono">ENGAGE_COORD</span>`;
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        function buyItem(itemType, cost) {
+            if (player.shards < cost) {
+                playSound('damage');
+                addLog(`<span class="text-amber-500">⚠️ Access denied! You do not possess enough glowing Shards to purchase this asset.</span>`);
+                return;
+            }
+
+            playSound('success');
+            player.shards -= cost;
+            player.inventory[itemType]++;
+            addLog(`<span class="text-neon-gold">[MERCHANT] Successfully purchased 1 ${itemType}! Transmission complete.</span>`);
+            syncStats();
+        }
+
+        function leaveActiveNode() {
+            playSound('click');
+            generateNodes();
+        }
+
+        function triggerArcadeGameOver() {
+            playSound('gameover');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = player.score;
+            document.getElementById('final-shards').innerText = player.shards;
+        }
+
+        function restartArcade() {
+            playSound('shift');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            addLog(`<span class="text-purple-400 font-bold">[REBOOT] Matrix coordinates cleared. Set up your champion again.</span>`);
+        }
+
+        // Cosmic timeline background animation
+        const bgCanvas = document.getElementById('warp-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let warpParticles = [];
+
+        function resizeBackground() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeBackground);
+        resizeBackground();
+
+        class WarpNode {
+            constructor() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.7;
+                this.color = Math.random() > 0.6 ? 'rgba(168, 85, 247, 0.25)' : 'rgba(245, 158, 11, 0.15)';
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > bgCanvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > bgCanvas.height) this.vy *= -1;
+            }
+            draw() {
+                bgCtx.fillStyle = this.color;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                bgCtx.fill();
+            }
+        }
+
+        function initWarpEffect() {
+            warpParticles = [];
+            for (let i = 0; i < 65; i++) {
+                warpParticles.push(new WarpNode());
+            }
+        }
+        initWarpEffect();
+
+        function animateWarp() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            warpParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateWarp);
+        }
+        animateWarp();
+    </script>
+</body>
+</html>
