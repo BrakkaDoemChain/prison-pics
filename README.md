@@ -120,3 +120,5 @@ Raw
 - opnieuw - vandaag - right nou
 
 - [08-06-2026 alweer](logs/README-08-06-2026.md)
+- [09-06-2026](https://www.youtube.com/watch?v=eeOTxCcWMzY&list=RDmsTymDtlYME&index=10)
+- [EN H3T menu vandaag strsskd gmach,kt dus](logs/README-09-06-2026.md)
