@@ -52,6 +52,8 @@
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
+            border: 1px solid #333;
+            border-radius: 8px;
         }
         .video-container iframe {
             position: absolute;
@@ -105,7 +107,7 @@
         <!-- System Update -->
         <section class="bg-panel border-l-4 border-hacker p-6 rounded-r-lg shadow-2xl">
             <h2 class="text-xl font-bold mb-3 flex items-center gap-2 text-white">
-                System Update + Latest Log
+                <i data-lucide="git-pull-request" class="w-5 h-5 text-hacker"></i> System Update + Latest Log
             </h2>
             <p class="text-gray-400">Priority Alpha: Prison.Pics first.</p>
             <p class="border-l-4 border-yellow-500 pl-4 italic mt-4">
@@ -113,21 +115,36 @@
             </p>
         </section>
 
-        <!-- Embedded Video -->
-        <section class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-6">
+        <!-- Video Transmissions -->
+        <section class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-6 space-y-8">
             <h3 class="text-hacker font-mono mb-4 flex items-center gap-2">
-                <i data-lucide="play" class="w-5 h-5"></i> LATEST TRANSMISSION
+                <i data-lucide="play" class="w-5 h-5"></i> LATEST TRANSMISSIONS
             </h3>
-            <div class="video-container rounded overflow-hidden border border-gray-700">
-                <iframe 
-                    width="100%" 
-                    height="315" 
-                    src="https://www.youtube.com/embed/Ap_i8zkBMBU" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
+            
+            <!-- First Video -->
+            <div>
+                <div class="video-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/Ap_i8zkBMBU" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Second Video -->
+            <div>
+                <div class="video-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/ih_9tVBbIiU" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
             </div>
         </section>
     </main>
