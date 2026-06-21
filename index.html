@@ -47,6 +47,19 @@
             z-index: 50;
             opacity: 0.4;
         }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body class="font-sans antialiased relative min-h-screen flex flex-col">
@@ -87,21 +100,34 @@
             <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase">
                 Ongeziene <span class="glitch-text text-white">Realiteiten</span>
             </h1>
-            <p class="text-gray-400 max-w-2xl font-mono text-sm md:text-base leading-relaxed">
-                Aangedreven door BrakkaDoemChain. Wachten op community uploads via GitHub.
-            </p>
         </header>
 
+        <!-- System Update -->
         <section class="bg-panel border-l-4 border-hacker p-6 rounded-r-lg shadow-2xl">
             <h2 class="text-xl font-bold mb-3 flex items-center gap-2 text-white">
-                <i data-lucide="git-pull-request" class="w-5 h-5 text-hacker"></i> 
-                System Update: Priority Shift + Latest Log
+                System Update + Latest Log
             </h2>
-            <div class="prose prose-invert prose-p:font-mono prose-p:text-sm prose-p:text-gray-400">
-                <p>We doen Prison.Pics eerst. Priority Alpha.</p>
-                <p class="border-l-4 border-yellow-500 pl-4 italic mt-4">
-                    <strong>21-06-2026:</strong> Fathers day from HQ Hoorn GGZ prison. Gemini Phone died. Samsung s23 backup. Dictator rulez with Botez.
-                </p>
+            <p class="text-gray-400">Priority Alpha: Prison.Pics first.</p>
+            <p class="border-l-4 border-yellow-500 pl-4 italic mt-4">
+                <strong>21-06-2026:</strong> Fathers day from HQ Hoorn GGZ prison. Gemini Phone died...
+            </p>
+        </section>
+
+        <!-- Embedded Video -->
+        <section class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-6">
+            <h3 class="text-hacker font-mono mb-4 flex items-center gap-2">
+                <i data-lucide="play" class="w-5 h-5"></i> LATEST TRANSMISSION
+            </h3>
+            <div class="video-container rounded overflow-hidden border border-gray-700">
+                <iframe 
+                    width="100%" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/Ap_i8zkBMBU" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
             </div>
         </section>
     </main>
