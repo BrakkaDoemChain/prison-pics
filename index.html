@@ -50,13 +50,11 @@
     </style>
 </head>
 <body class="font-sans antialiased relative min-h-screen flex flex-col">
-    <!-- CRT TV Effect Overlay -->
     <div class="crt-overlay"></div>
     <div class="fixed inset-0 pointer-events-none z-40 overflow-hidden">
         <div class="w-full h-4 bg-hacker/10 opacity-50 animate-scanline"></div>
     </div>
 
-    <!-- Navbar -->
     <nav class="border-b border-gray-800 bg-darkBg/90 backdrop-blur-sm sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -67,8 +65,8 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-6 font-mono text-sm">
                         <a href="#chatcam" class="text-gray-300 hover:text-hacker transition-colors">./Chatcam</a>
-                        <a href="#archives" class="text-gray-300 hover:text-hacker transition-colors">./Archives</a>
-                        <span class="text-gray-600 line-through cursor-not-allowed flex items-center gap-2" title="On Hold: Priority is Prison.Pics">
+                        <a href="https://github.com/BrakkaDoemChain/prison-pics/tree/main/logs" target="_blank" class="text-gray-300 hover:text-hacker transition-colors">./Archives</a>
+                        <span class="text-gray-600 line-through cursor-not-allowed flex items-center gap-2">
                             ./Captains.Rest <i data-lucide="lock" class="w-3 h-3"></i>
                         </span>
                         <a href="https://github.com/BrakkaDoemChain/prison-pics" target="_blank" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
@@ -81,8 +79,6 @@
     </nav>
 
     <main class="flex-grow w-full max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-12">
-        
-        <!-- Header / Status Section -->
         <header class="flex flex-col items-center text-center mt-8">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-alert/50 bg-alert/10 text-alert font-mono text-xs mb-6 animate-pulse-slow">
                 <i data-lucide="alert-triangle" class="w-4 h-4"></i>
@@ -92,49 +88,22 @@
                 Ongeziene <span class="glitch-text text-white">Realiteiten</span>
             </h1>
             <p class="text-gray-400 max-w-2xl font-mono text-sm md:text-base leading-relaxed">
-                Aangedreven door BrakkaDoemChain. Een gedecentraliseerd archief. De fysieke camera (Pixel 9 Pro) is gebroken, maar de chain blijft draaien. Wachten op community uploads via GitHub.
+                Aangedreven door BrakkaDoemChain. Wachten op community uploads via GitHub.
             </p>
         </header>
 
-        <!-- System Update with latest log -->
-        <section class="bg-panel border-l-4 border-hacker p-6 rounded-r-lg shadow-2xl relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <i data-lucide="anchor" class="w-24 h-24 text-white"></i>
-            </div>
+        <section class="bg-panel border-l-4 border-hacker p-6 rounded-r-lg shadow-2xl">
             <h2 class="text-xl font-bold mb-3 flex items-center gap-2 text-white">
                 <i data-lucide="git-pull-request" class="w-5 h-5 text-hacker"></i> 
-                System Update: Priority Shift + 21-06 Log
+                System Update: Priority Shift + Latest Log
             </h2>
             <div class="prose prose-invert prose-p:font-mono prose-p:text-sm prose-p:text-gray-400">
-                <p>
-                    Bericht aan de community: De initiële plannen voor de lancering van <strong>Captains.Rest</strong> zijn officieel in de ijskast gezet. 
-                </p>
-                <p>
-                    We doen <strong>Prison.Pics</strong> eerst. Priority Alpha. Sinds de lens van de primaire node aan diggelen ligt, moeten we de decentrale P2P infrastructuur stabiliseren. Sync je Skellington keys.
-                </p>
+                <p>We doen Prison.Pics eerst. Priority Alpha.</p>
                 <p class="border-l-4 border-yellow-500 pl-4 italic mt-4">
-                    <strong>21-06-2026 Father's Day Log:</strong> Today from actual prison, HQ Hoorn GGZ. My Gemini Phone died, Google Pro 9. Korea plankie Samsung s23 trying to get us back up. Just proven with Botez we have to live by dictator rulez.
+                    <strong>21-06-2026:</strong> Fathers day from HQ Hoorn GGZ prison. Gemini Phone died. Samsung s23 backup. Dictator rulez with Botez.
                 </p>
             </div>
         </section>
-
-        <!-- Chatcam Section (kept functional) -->
-        <section id="chatcam" class="py-12">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-[#0a0a0a] border border-gray-800 rounded-lg overflow-hidden relative min-h-[400px] flex items-center justify-center">
-                    <div class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/50 px-2 py-1 rounded text-xs font-mono text-gray-400">
-                        <span class="text-yellow-500 font-bold">WARN</span> CAM-MAIN // OFFLINE
-                    </div>
-                    <div class="text-center text-gray-600 font-mono text-sm">
-                        [ CRITICAL ERROR: LENS SHATTERED ]<br>
-                        Wachten op decentrale uploads...
-                    </div>
-                </div>
-                <!-- Chat placeholder remains -->
-            </div>
-        </section>
-
-        <!-- Keep the rest of your original content (stats, archive etc.) below if you want, or paste over the whole thing. -->
     </main>
 
     <script>
