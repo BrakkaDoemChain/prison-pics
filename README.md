@@ -125,3 +125,4 @@ Raw
 - [09-06-2026](https://www.youtube.com/watch?v=eeOTxCcWMzY&list=RDmsTymDtlYME&index=10)
 - [EN H3T menu vandaag strsskd gmach,kt dus](logs/README-09-06-2026.md)
 - [10-06-2026 al(nejo copopij ghjlaai I shawt hir heer hot it hit wit mon fg g99 kool q9sos9 knal)kjdenskjdncckjuwdenfd)weer](logs/README-10-06-2026.md)
+- [Live from prison as predicted, or is it a precidence? ](logs/README-21-06-2026.md)
