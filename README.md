@@ -127,3 +127,4 @@ Raw
 - [10-06-2026 al(nejo copopij ghjlaai I shawt hir heer hot it hit wit mon fg g99 kool q9sos9 knal)kjdenskjdncckjuwdenfd)weer](logs/README-10-06-2026.md)
 - [Live from prison as predicted, or is it a precidence? ](logs/README-21-06-2026.md)
 - [a or a- live or -life](logs/README-23-06-2026.md)
+- [a or b](logs/README-24-06-2026.md)
