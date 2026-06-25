@@ -128,3 +128,4 @@ Raw
 - [Live from prison as predicted, or is it a precidence? ](logs/README-21-06-2026.md)
 - [a or a- live or -life](logs/README-23-06-2026.md)
 - [a or b](logs/README-24-06-2026.md)
+- [day 25](logs/README-25-06-2026.md)
